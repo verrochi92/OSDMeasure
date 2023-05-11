@@ -12,8 +12,10 @@
  */
 
 class OSDMeasureAndAnnotate {
-    constructor(viewer, conversionFactor = 1, units = "px") {
+    constructor(viewer, options = {}) {
         this.viewer = viewer;
+
+        processOptions(options);
 
         // pull in the two libraries
         this.overlay = viewer.fabricjsOverlay();
@@ -35,10 +37,6 @@ class OSDMeasureAndAnnotate {
 
         // measurement marking color
         this.measurementColor = "#000000";
-
-        // these are used to convert from pixels to real-world units
-        this.conversionFactor = conversionFactor;
-        this.units = units;
 
         // save annotations after creations
         this.annotations.on('createAnnotation', () => {
@@ -65,6 +63,33 @@ class OSDMeasureAndAnnotate {
         })
 
         this.loadFromLocalStorage();
+    }
+
+    processOptions(options) {
+        if (options.useDefaultUI) {
+            if (options.menuOptions) {
+                this.menuOptions = options.menuOptions;
+            }
+            else {
+                this.menuOptions = {};
+            }
+            let ui = new UI(menuOptions);
+            ui.addToDocument();
+        }
+
+        if (options.conversionFactor) {
+            this.conversionFactor = options.conversionFactor;
+        }
+        else {
+            this.conversionFactor = 1;
+        }
+
+        if (options.units) {
+            this.units = options.units;
+        }
+        else {
+            this.units = "px";
+        }
     }
 
     /*
