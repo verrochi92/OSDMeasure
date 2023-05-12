@@ -15,7 +15,7 @@ class OSDMeasureAndAnnotate {
     constructor(viewer, options = {}) {
         this.viewer = viewer;
 
-        processOptions(options);
+        this.processOptions(options);
 
         // pull in the two libraries
         this.overlay = viewer.fabricjsOverlay();
@@ -73,7 +73,7 @@ class OSDMeasureAndAnnotate {
             else {
                 this.menuOptions = {};
             }
-            let ui = new UI(menuOptions);
+            let ui = new UI(this.menuOptions);
             ui.addToDocument();
         }
 
