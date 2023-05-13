@@ -11,8 +11,9 @@ class MenuIcon {
     /**
      * HTML elements
      */
-    menuIcon; // div that holds the menu icon
+    element; // div that holds the menu icon
     dots; // array of divs used to visually create dots in the icon
+    viewer; // the OpenSeadragon viewer
 
     /**
      * Style options
@@ -28,15 +29,11 @@ class MenuIcon {
      * Adds the menu icon to the DOM tree
      * 
      * @param {Object} options: set the style options for the menu icon
-     * 
-     * relevant options are as follows:
-     * - menuIconColor: color of the dots in the icon
-     * - menuBackgroundColor: background color of the entire menu
      */
     constructor(options = {}) {
         this.processOptions(options);
-        this.menuIcon = document.createElement("div");
-        this.menuIcon.setAttribute("tabindex", "0"); // allow tabbing
+        this.element = document.createElement("div");
+        this.element.setAttribute("tabindex", "0"); // allow tabbing
         this.dots = [
             document.createElement("div"),
             document.createElement("div"),
@@ -48,10 +45,10 @@ class MenuIcon {
         this.dots.map((dot) => {
             this.setupDotStyle(dot);
         })
-        
+
         // add dots to the icon
         this.dots.map((dot) => {
-            this.menuIcon.appendChild(dot);
+            this.element.appendChild(dot);
         });
     }
 
@@ -62,9 +59,8 @@ class MenuIcon {
      * Appends elements as children to the viewer - this allows the menu to appear while in fullscreen mode
      */
     addToDocument() {
-        let viewer = document.getElementById("viewer");
         document.body.appendChild(this.menuIcon);
-        viewer.appendChild(this.menuIcon);
+        this.viewer.appendChild(this.menuIcon);
     }
 
     /**
@@ -76,6 +72,13 @@ class MenuIcon {
      * @param {Object} options 
      */
     processOptions(options) {
+        if (options.menuBackgroundColor) {
+            this.menuBackgroundColor = options.menuBackgroundColor;
+        }
+        else {
+            this.menuBackgroundColor = "rgba(0, 0, 0, 0.7)";
+        }
+
         if (options.menuIconColor) {
             this.menuIconColor = options.menuIconColor;
         }
@@ -83,11 +86,11 @@ class MenuIcon {
             this.menuIconColor = "white";
         }
 
-        if (options.menuBackgroundColor) {
-            this.menuBackgroundColor = options.menuBackgroundColor;
+        if (options.viewerElement) {
+            this.viewer = options.viewerElement;
         }
         else {
-            this.menuBackgroundColor = "rgba(0, 0, 0, 0.7)";
+            this.viewer = document.getElementById("viewer");
         }
     }
 

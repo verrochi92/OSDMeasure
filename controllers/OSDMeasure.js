@@ -1,17 +1,55 @@
 /*
- * OSDMeasureAndAnnotate.js
+ * OSDMeasure.js
  * 
  * Plugin for OpenSeadragon that allows for measuring
  * as well as annotation on the same image.
  * 
  * By Nicholas Verrochi and Vidhya Sree N
- * For CS410 - The Axolotl Project
  * 
  * Requires OpenSeadragon, Annotorious, Fabric.js, 
  * and the OpenSeadragon Fabric.js Overlay plugin
  */
 
 class OSDMeasureAndAnnotate {
+
+    /**
+     * APIs used by the plugin
+     */
+    viewer; // the OpenSeadragon viewer
+    overlay; // the fabric.js overlay, contains the canvas
+    fabricCanvas; // the fabric.js canvas to draw shapes on
+    annotations; // annotorious plugin for annotations
+
+    /**
+     * Flags
+     */
+    isMeasuring; // flag to indicate when user is mid-measurement (one point marked)
+    useBuiltInUI; // when true, will setup the built-in UI after starting
+
+    /**
+     * Data
+     */
+    measurements; // holds measurements taken in an array
+    p1; // start point of the measurement
+    p2; // end point of the measurement
+    redoStack; // populated upon undo - this way the user can go back again
+
+    /**
+     * Customization options 
+     */
+    conversionFactor; // factor to multiply for converting from pixels
+    measurementColor; // color to render measurement markings
+    menuOptions; // options object to be passed to the built-in UI if used
+    units; // string to indicate what units are used, for example "um" 
+
+    /**
+     * constructor
+     * 
+     * Sets up the viewer by starting a fabric.js overlay and wiring callbacks
+     * 
+     * @param {OpenSeadragon} viewer: the OpenSeadragon viewer
+     * @param {Object} options: object used to customize settings
+     */
     constructor(viewer, options = {}) {
         this.viewer = viewer;
 
@@ -66,7 +104,7 @@ class OSDMeasureAndAnnotate {
     }
 
     processOptions(options) {
-        if (options.useDefaultUI) {
+        if (options.useBuiltInUI) {
             if (options.menuOptions) {
                 this.menuOptions = options.menuOptions;
             }

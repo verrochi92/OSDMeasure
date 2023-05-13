@@ -29,10 +29,7 @@ class UI {
      * Options comes from the "uiOptions" object from the "options" objects 
      * used to instantiate the OSDMeasure class
      * 
-     * @param {Object} options 
-     * 
-     * relevant options are as follows:
-     * - backgroundColor: background color for the document
+     * @param {Object} options: options to customize the menu
      */
     constructor(options = {}) {
         this.processOptions(options);
