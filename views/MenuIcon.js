@@ -1,7 +1,7 @@
 /**
  * MenuBar.js
  * 
- * Programatically generates a menu icon
+ * Encapsulates the menu icon 
  * 
  * By Nicholas Verrochi
  */
