@@ -6,18 +6,19 @@
  * By Nicholas Verrochi
  */
 
-class MenuIcon {
+class MenuButton {
+
+    plugin; // reference to the OSDMeasure plugin
 
     /**
      * HTML elements
      */
     element; // img element that holds the menu icon
-    viewer; // the OpenSeadragon viewer - needed to setup fullscreen
 
     /**
      * Customization options
      */
-    menuIconColor; // color of the menu icon
+    menuButtonColor; // color of the menu icon
 
     /**
      * constructor
@@ -26,9 +27,11 @@ class MenuIcon {
      * Sets up callbacks to open the menu on click
      * Adds the menu icon to the DOM tree
      * 
+     * @param {OSDMeasure} plugin: reference used to interact with the plugin
      * @param {Object} options: set the style options for the menu icon
      */
-    constructor(options = {}) {
+    constructor(plugin, options = {}) {
+        this.plugin = plugin;
         this.processOptions(options);
         this.element = document.createElement("img");
         this.element.setAttribute("tabindex", "0"); // allow tabbing
@@ -44,7 +47,8 @@ class MenuIcon {
      */
     addToDocument() {
         document.body.appendChild(this.element);
-        this.viewer.appendChild(this.element);
+        // appending to viewer so icon displays in fullscreen mode
+        this.plugin.viewer.element.appendChild(this.element);
     }
 
     /**
@@ -56,18 +60,11 @@ class MenuIcon {
      * @param {Object} options 
      */
     processOptions(options) {
-        if (options.viewerElement) {
-            this.viewer = options.viewerElement;
+        if (options.menuButtonColor) {
+            this.menuButtonColor = options.menuButtonColor;
         }
         else {
-            this.viewer = document.getElementById("viewer");
-        }
-
-        if (options.menuIconColor) {
-            this.menuIconColor = options.menuIconColor;
-        }
-        else {
-            this.menuIconColor = "white";
+            this.menuButtonColor = "white";
         }
     }
 
@@ -79,10 +76,10 @@ class MenuIcon {
     setupStyle() {
         let style = this.element.style;
         // need to set background color for visibility
-        style.setProperty("background-color", this.menuIconColor);
+        style.setProperty("background-color", this.menuButtonColor);
         // positioning - set in top right
         style.setProperty("position", "absolute");
-        style.setProperty("top", "1%");
+        style.setProperty("top", "0%");
         style.setProperty("right", "0%");
         style.setProperty("z-index", "1");
         // pointer cursor so the user knows they can click

@@ -10,7 +10,7 @@
  * and the OpenSeadragon Fabric.js Overlay plugin
  */
 
-class OSDMeasureAndAnnotate {
+class OSDMeasure {
 
     /**
      * APIs used by the plugin
@@ -73,9 +73,6 @@ class OSDMeasureAndAnnotate {
         // temporarily stores undone measurements
         this.redoStack = [];
 
-        // measurement marking color
-        this.measurementColor = "#000000";
-
         // save annotations after creations
         this.annotations.on('createAnnotation', () => {
             this.saveInLocalStorage();
@@ -104,17 +101,6 @@ class OSDMeasureAndAnnotate {
     }
 
     processOptions(options) {
-        if (options.useBuiltInUI) {
-            if (options.menuOptions) {
-                this.menuOptions = options.menuOptions;
-            }
-            else {
-                this.menuOptions = {};
-            }
-            let ui = new UI(this.menuOptions);
-            ui.addToDocument();
-        }
-
         if (options.conversionFactor) {
             this.conversionFactor = options.conversionFactor;
         }
@@ -127,6 +113,24 @@ class OSDMeasureAndAnnotate {
         }
         else {
             this.units = "px";
+        }
+
+        if (options.measurementColor) {
+            this.measurementColor = options.measurementColor;
+        }
+        else {
+            this.measurementColor = "#000000"
+        }
+
+        if (options.useBuiltInUI) {
+            if (options.menuOptions) {
+                this.menuOptions = options.menuOptions;
+            }
+            else {
+                this.menuOptions = {};
+            }
+            let ui = new UI(this, this.menuOptions);
+            ui.addToDocument();
         }
     }
 
@@ -167,19 +171,52 @@ class OSDMeasureAndAnnotate {
     }
 
     /**
-     * saveInLocalStorage:
-     *     Saves the measurements and annotations in localStorage in JSON format
+     * clear:
+     *     Erases all saved data (measurements and annotations) for
+     *     this specific image from localStorage and clears fabric
+     *     objects, measurement data, and annotations.
      */
-    saveInLocalStorage() {
-        // we can use the tileSource as a key to identify which image we are working with
-        let currentTileSource = this.viewer.tileSources; // for now only works with one source
-        let json = JSON.stringify({
-            measurements: this.measurements,
-            redoStack: this.redoStack,
-            annotations: this.annotations.getAnnotations(),
-            color: this.color
-        });
-        localStorage.setItem(currentTileSource, json);
+    clear() {
+        localStorage.removeItem(this.viewer.tileSources);
+        this.fabricCanvas.clear();
+        this.measurements = [];
+        this.redoStack = [];
+        this.annotations.clearAnnotations();
+        this.p1 = null;
+        this.p2 = null;
+        document.dispatchEvent(new Event("measurements-reset"));
+    }
+
+    /**
+     * exportCSV:
+     *     creates a CSV containing the measurement data
+     */
+    exportCSV() {
+        let header = ["Point 1", "Point 2", "Distance"]
+        let createRow = (measurement) => {
+            return [
+                measurement.p1.toString(),
+                measurement.p2.toString(),
+                measurement.toString()
+            ];
+        }
+        // generate the rows
+        let rows = [header];
+        for (let i = 0; i < this.measurements.length; i++) {
+            rows.push(createRow(this.measurements[i]));
+        }
+        // join the rows together
+        let csv = "data:text/csv;charset=utf-8," + rows.map((row) => row.join(",")).join("\n");
+        // encode to URI
+        let uri = encodeURI(csv);
+        // download using invisible link trick
+        let link = document.createElement("a");
+        link.setAttribute("href", uri);
+        link.setAttribute("download", "measurements.csv");
+        document.body.appendChild(link);
+        link.click();
+        // clean up
+        document.body.removeChild(link);
     }
 
     /**
@@ -215,66 +252,10 @@ class OSDMeasureAndAnnotate {
                 // Annotorious is set up to take the stripped objects from the JSON
                 this.annotations.addAnnotation(data.annotations[i]);
             }
-            this.color = data.color;
+            this.measurementColor = data.color;
             // render the measurements
             this.renderAllMeasurements();
         }
-    }
-
-    /**
-     * renderAllMeasurements:
-     *     Renders all measurements
-     */
-    renderAllMeasurements() {
-        this.fabricCanvas.clear();
-        let zoom = this.viewer.viewport.getZoom();
-        for (let i = 0; i < this.measurements.length; i++) {
-            this.measurements[i].render(this.fabricCanvas, zoom);
-        }
-        if (this.isMeasuring && this.p1 != null) {
-            this.p1.render(this.fabricCanvas, zoom);
-        }
-    }
-
-    /**
-     * clear:
-     *     Erases all saved data (measurements and annotations) for
-     *     this specific image from localStorage and clears fabric
-     *     objects, measurement data, and annotations.
-     */
-    clear() {
-        localStorage.removeItem(this.viewer.tileSources);
-        this.fabricCanvas.clear();
-        this.measurements = [];
-        this.redoStack = [];
-        this.annotations.clearAnnotations();
-        this.p1 = null;
-        this.p2 = null;
-        document.dispatchEvent(new Event("measurements-reset"));
-    }
-
-    /**
-     * undo:
-     *     Undose the last action - if mid-measurement, the first
-     *     point is erased and the user will have to start over.
-     *     Otherwise, the last created measurement is erased.
-     */
-    undo() {
-        if (this.isMeasuring) { // we have a point
-            // store the point for redo
-            this.redoStack.push(this.p1);
-            this.p1 = null;
-            this.isMeasuring = !this.isMeasuring;
-            this.renderAllMeasurements();
-        }
-        else if (this.measurements.length > 0) { // we have a whole measurement
-            // pop out of measurements and into redoStack
-            this.redoStack.push(this.measurements.pop());
-            this.saveInLocalStorage();
-            this.renderAllMeasurements();
-            document.dispatchEvent(new Event("measurement-removed"));
-        }
-
     }
 
     /**
@@ -305,6 +286,37 @@ class OSDMeasureAndAnnotate {
     }
 
     /**
+     * renderAllMeasurements:
+     *     Renders all measurements
+     */
+    renderAllMeasurements() {
+        this.fabricCanvas.clear();
+        let zoom = this.viewer.viewport.getZoom();
+        for (let i = 0; i < this.measurements.length; i++) {
+            this.measurements[i].render(this.fabricCanvas, zoom);
+        }
+        if (this.isMeasuring && this.p1 != null) {
+            this.p1.render(this.fabricCanvas, zoom);
+        }
+    }
+
+    /**
+     * saveInLocalStorage:
+     *     Saves the measurements and annotations in localStorage in JSON format
+     */
+    saveInLocalStorage() {
+        // we can use the tileSource as a key to identify which image we are working with
+        let currentTileSource = this.viewer.tileSources; // for now only works with one source
+        let json = JSON.stringify({
+            measurements: this.measurements,
+            redoStack: this.redoStack,
+            annotations: this.annotations.getAnnotations(),
+            color: this.measurementColor
+        });
+        localStorage.setItem(currentTileSource, json);
+    }
+
+    /**
      * setMeasurementColor:
      *     changes color of measurement markings, also when
      *     mid-measurement, changes the color of the first marking
@@ -320,34 +332,26 @@ class OSDMeasureAndAnnotate {
     }
 
     /**
-     * exportCSV:
-     *     creates a CSV containing the measurement data
+     * undo:
+     *     Undose the last action - if mid-measurement, the first
+     *     point is erased and the user will have to start over.
+     *     Otherwise, the last created measurement is erased.
      */
-    exportCSV() {
-        let header = ["Point 1", "Point 2", "Distance"]
-        let createRow = (measurement) => {
-            return [
-                measurement.p1.toString(),
-                measurement.p2.toString(),
-                measurement.toString()
-            ];
+    undo() {
+        if (this.isMeasuring) { // we have a point
+            // store the point for redo
+            this.redoStack.push(this.p1);
+            this.p1 = null;
+            this.isMeasuring = !this.isMeasuring;
+            this.renderAllMeasurements();
         }
-        // generate the rows
-        let rows = [header];
-        for (let i = 0; i < this.measurements.length; i++) {
-            rows.push(createRow(this.measurements[i]));
+        else if (this.measurements.length > 0) { // we have a whole measurement
+            // pop out of measurements and into redoStack
+            this.redoStack.push(this.measurements.pop());
+            this.saveInLocalStorage();
+            this.renderAllMeasurements();
+            document.dispatchEvent(new Event("measurement-removed"));
         }
-        // join the rows together
-        let csv = "data:text/csv;charset=utf-8," + rows.map((row) => row.join(",")).join("\n");
-        // encode to URI
-        let uri = encodeURI(csv);
-        // download using invisible link trick
-        let link = document.createElement("a");
-        link.setAttribute("href", uri);
-        link.setAttribute("download", "measurements.csv");
-        document.body.appendChild(link);
-        link.click();
-        // clean up
-        document.body.removeChild(link);
+
     }
 }
