@@ -37,6 +37,7 @@ class Menu {
         this.colorSelector.value = plugin.measurementColor; // set color from plugin
         // handler for changing color
         this.colorSelector.addEventListener("change", this.handleColorChange.bind(this), false);
+        this.setColorSelectorStyle();
         this.element.appendChild(this.colorSelector);
     }
 
@@ -59,6 +60,17 @@ class Menu {
     handleColorChange() {
         let color = this.colorSelector.value;
         this.plugin.setMeasurementColor(color);
+    }
+
+    /**
+     * setColorSelectorStyle:
+     * 
+     * Sets the style of the color selector
+     */
+    setColorSelectorStyle() {
+        let style = this.colorSelector.style;
+        style.setProperty("width", "100%");
+        style.setProperty("height", "30px");
     }
 
     /**
