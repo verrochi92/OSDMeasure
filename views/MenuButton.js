@@ -16,11 +16,6 @@ class MenuButton {
     element; // img element that holds the menu icon
 
     /**
-     * Customization options
-     */
-    menuButtonColor; // color of the menu icon
-
-    /**
      * constructor
      * 
      * Encapsulates the menu icon using HTMLElement objects
@@ -28,11 +23,9 @@ class MenuButton {
      * Adds the menu icon to the DOM tree
      * 
      * @param {OSDMeasure} plugin: reference used to interact with the plugin
-     * @param {Object} options: set the style options for the menu icon
      */
-    constructor(plugin, options = {}) {
+    constructor(plugin) {
         this.plugin = plugin;
-        this.processOptions(options);
         this.element = document.createElement("img");
         this.element.setAttribute("tabindex", "0"); // allow tabbing
         this.element.setAttribute("src", "img/hamburger-50.png")
@@ -52,23 +45,6 @@ class MenuButton {
     }
 
     /**
-     * processOptions:
-     * 
-     * Stores options from the passed in object in the object proper
-     * Sets defaults for options not included
-     * 
-     * @param {Object} options 
-     */
-    processOptions(options) {
-        if (options.menuButtonColor) {
-            this.menuButtonColor = options.menuButtonColor;
-        }
-        else {
-            this.menuButtonColor = "white";
-        }
-    }
-
-    /**
      * setupIconStyle:
      * 
      * Sets up the CSS styling for the menu icon (not the dots within)
@@ -76,7 +52,7 @@ class MenuButton {
     setupStyle() {
         let style = this.element.style;
         // need to set background color for visibility
-        style.setProperty("background-color", this.menuButtonColor);
+        style.setProperty("background-color", "white");
         // positioning - set in top right
         style.setProperty("position", "absolute");
         style.setProperty("top", "0%");

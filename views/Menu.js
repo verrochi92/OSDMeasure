@@ -22,14 +22,14 @@ class Menu {
      * Programatically constructs a menu
      * 
      * @param {OSDMeasure} plugin: reference to interact with the plugin
-     * @param {Object} options: customization options object
      */
-    constructor(plugin, options = {}) {
+    constructor(plugin) {
         this.plugin = plugin;
 
         // create menu container
         this.element = document.createElement("div");
         this.element.setAttribute("hidden", "hidden"); // start hidden until user opens
+        this.setMenuStyle();
 
         // create color selector
         this.colorSelector = document.createElement("input");
@@ -41,7 +41,7 @@ class Menu {
     }
 
     /**
-     * addToDocument
+     * addToDocument:
      * 
      * Adds the menu to the DOM tree
      */
@@ -52,13 +52,33 @@ class Menu {
     }
 
     /**
-     * handleColorChange
+     * handleColorChange:
      * 
      * Handles change in color from the color selector 
      */
     handleColorChange() {
-        console.log("handleColorChange called...");
         let color = this.colorSelector.value;
         this.plugin.setMeasurementColor(color);
+    }
+
+    /**
+     * setMenuStyle:
+     * 
+     * sets the style of the menu container
+     */
+    setMenuStyle() {
+        let style = this.element.style;
+        // positioning
+        style.setProperty("position", "absolute");
+        style.setProperty("text-align", "left");
+        style.setProperty("top", "10%");
+        style.setProperty("right", "0%");
+        style.setProperty("z-index", "2");
+        // sizing
+        style.setProperty("min-height", "5%");
+        style.setProperty("min-width", "10%");
+        style.setProperty("padding", "1%");
+        // coloring and opacity
+        style.setProperty("background", "rgba(0, 0, 0, 0.75)");
     }
 }
