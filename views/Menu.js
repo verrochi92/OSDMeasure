@@ -71,6 +71,8 @@ class Menu {
         let style = this.colorSelector.style;
         style.setProperty("width", "100%");
         style.setProperty("height", "30px");
+        style.setProperty("border", "none");
+        style.setProperty("padding", "0px");
     }
 
     /**

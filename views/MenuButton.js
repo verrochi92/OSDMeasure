@@ -16,7 +16,7 @@ class MenuButton {
     element; // img element that holds the menu icon
 
     /**
-     * constructor
+     * constructor:
      * 
      * Encapsulates the menu icon using HTMLElement objects
      * Sets up callbacks to open the menu on click
