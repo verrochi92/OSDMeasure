@@ -29,8 +29,9 @@ class MeasurementList {
         this.element.style.setProperty("list-style", "none");
 
         // add new list item when measurement added
-        document.addEventListener("measurement-added", this.addMeasurement.bind(this), false);
-        document.addEventListener("measurement-removed", this.removeMeasurement.bind(this), false);
+        document.addEventListener("measurement-added", this.addMeasurement.bind(this));
+        document.addEventListener("measurement-removed", this.removeMeasurement.bind(this));
+        document.addEventListener("measurements-reset", this.resetMeasurements.bind(this));
     }
 
     /**
@@ -63,5 +64,17 @@ class MeasurementList {
      */
     removeMeasurement() {
         this.element.removeChild(this.listItems.pop().element);
+    }
+
+    /**
+     * resetMeasurements:
+     * 
+     * Clears the list when the user resets all measurements
+     */
+    resetMeasurements() {
+        for(let i = 0; i < this.listItems.length; i++) {
+            this.element.removeChild(this.listItems[i].element);
+        }
+        this.listItems = [];
     }
 }

@@ -218,6 +218,7 @@ class OSDMeasure {
                 this.annotations.addAnnotation(data.annotations[i]);
             }
             this.measurementColor = data.color;
+            document.dispatchEvent(new Event("data-loaded"));
             // render the measurements
             this.renderAllMeasurements();
         }
