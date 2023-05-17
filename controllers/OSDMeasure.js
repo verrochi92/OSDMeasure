@@ -86,7 +86,6 @@ class OSDMeasure {
             }
         });
 
-
         // re-render on page event (change in zoom)
         this.viewer.addHandler('zoom', () => {
             this.renderAllMeasurements();

@@ -6,6 +6,11 @@
  */
 
 class Point {
+
+    x; // x-coordinate in **image** coordinates
+    y; // y-coordinate in **image** coordinates
+    color; // color to render in
+
     constructor(x, y, color) {
         this.x = x;
         this.y = y;
@@ -23,10 +28,5 @@ class Point {
             radius: 150 / (zoom * 1.5)
         });
         fabricCanvas.add(this.fabricObject);
-    }
-
-    /* create the string representation of the point i.e (x, y) */
-    toString() {
-        return `(${this.x}, ${this.y})`
     }
 }
