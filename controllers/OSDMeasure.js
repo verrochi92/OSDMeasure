@@ -86,11 +86,11 @@ class OSDMeasure {
             }
         });
 
-
-        // re-render on page event (change in zoom)
-        this.viewer.addHandler('zoom', () => {
-            this.renderAllMeasurements();
-        });
+        //
+        //        // re-render on page event (change in zoom)
+        //        this.viewer.addHandler('zoom', () => {
+        //            this.renderAllMeasurements();
+        //        });
 
         // re-render on rotation
         this.viewer.addHandler('rotate', () => {
@@ -178,7 +178,8 @@ class OSDMeasure {
      */
     clear() {
         localStorage.removeItem(this.viewer.tileSources);
-        this.fabricCanvas.clear();
+        //        this.fabricCanvas.clear();
+        this.measurements.clear();
         this.measurements = [];
         this.redoStack = [];
         this.annotations.clearAnnotations();
