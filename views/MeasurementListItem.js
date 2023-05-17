@@ -33,11 +33,26 @@ class MeasurementListItem {
         this.nameField = document.createElement("input");
         this.nameField.setAttribute("type", "text");
         this.nameField.value = this.measurement.name;
+        this.setNameFieldStyle();
         this.element.appendChild(this.nameField);
 
         this.lengthDisplay = document.createElement("span");
-        this.lengthDisplay.innerText = `${(this.measurement.distance).toFixed(3)} ${this.measurement.units}`;
+        this.lengthDisplay.innerText = `: ${(this.measurement.distance).toFixed(3)} ${this.measurement.units}`;
         this.element.appendChild(this.lengthDisplay);
+    }
+
+    /**
+     * setNameFieldStyle:
+     * 
+     * Sets up the style of the name input field
+     */
+    setNameFieldStyle() {
+        let style = this.nameField.style;
+        style.setProperty("background", "transparent");
+        style.setProperty("border", "none");
+        style.setProperty("color", "white");
+        style.setProperty("text-align", "right");
+        style.setProperty("width", "50%");
     }
 
     /**
