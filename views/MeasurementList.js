@@ -61,6 +61,6 @@ class MeasurementList {
      * Removes the latest measurement from the list upon undo
      */
     removeMeasurement() {
-        this.element.removeChild(this.listItems.pop());
+        this.element.removeChild(this.listItems.pop().element);
     }
 }
