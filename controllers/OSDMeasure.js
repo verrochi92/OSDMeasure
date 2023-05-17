@@ -86,11 +86,11 @@ class OSDMeasure {
             }
         });
 
-        //
-        //        // re-render on page event (change in zoom)
-        //        this.viewer.addHandler('zoom', () => {
-        //            this.renderAllMeasurements();
-        //        });
+
+        // re-render on page event (change in zoom)
+        this.viewer.addHandler('zoom', () => {
+            this.renderAllMeasurements();
+        });
 
         // re-render on rotation
         this.viewer.addHandler('rotate', () => {
@@ -114,12 +114,9 @@ class OSDMeasure {
             this.p2 = new Point(imagePoint.x, imagePoint.y, this.measurementColor);
             let measurement = new Measurement(
                 this.p1, this.p2,
-                `measurement ${this.measurements.length + 1}`,
+                `M${this.measurements.length + 1}`,
                 this.measurementColor, this.conversionFactor, this.units
             );
-            // setup units
-            measurement.conversionFactor = this.conversionFactor;
-            measurement.units = this.units;
             // have to remove the original first dot - looking for a workaround
             this.fabricCanvas.remove(this.p1.fabricObject);
             measurement.render(this.fabricCanvas, zoom);
@@ -144,8 +141,7 @@ class OSDMeasure {
      */
     clear() {
         localStorage.removeItem(this.viewer.tileSources);
-        //        this.fabricCanvas.clear();
-        this.measurements.clear();
+        this.fabricCanvas.clear();
         this.measurements = [];
         this.redoStack = [];
         this.annotations.clearAnnotations();
@@ -159,9 +155,10 @@ class OSDMeasure {
      *     creates a CSV containing the measurement data
      */
     exportCSV() {
-        let header = ["Point 1", "Point 2", "Distance"]
+        let header = ["Name", "Point 1", "Point 2", "Distance"]
         let createRow = (measurement) => {
             return [
+                measurement.name,
                 measurement.p1.toString(),
                 measurement.p2.toString(),
                 measurement.toString()
