@@ -13,12 +13,12 @@ class UI {
     /**
      * HTML elements
      */
-    menuIcon; // traditional (three dots) menu icon
+    menuButton; // traditional (three dots) menu icon
 
     /**
      * Style options (from the "options" object)
      */
-    backgroundColor;
+    windowBackgroundColor;
 
     /**
      * constructor:
@@ -29,15 +29,19 @@ class UI {
      * Options comes from the "uiOptions" object from the "options" objects 
      * used to instantiate the OSDMeasure class
      * 
-     * @param {Object} options 
-     * 
-     * relevant options are as follows:
-     * - backgroundColor: background color for the document
+     * @param {OSDMeasure} plugin: reference to interact with the plugin
+     * @param {Object} options: options to customize the menu
      */
-    constructor(options = {}) {
+    constructor(plugin, options = {}) {
         this.processOptions(options);
         this.setBodyStyle();
-        this.menuIcon = new MenuIcon(options);
+
+        // setup menu and icon
+        this.menuButton = new MenuButton(plugin, options);
+        this.menu = new Menu(plugin, options);
+
+        // wire menu to open when icon clicked
+        this.menuButton.element.addEventListener("click", this.toggleMenu.bind(this));
     }
 
     /**
@@ -46,8 +50,24 @@ class UI {
      * Adds the entire UI to the document - call this after instantiating to display
      */
     addToDocument() {
-        this.menuIcon.addToDocument();
+        this.menuButton.addToDocument();
+        this.menu.addToDocument();
     }
+
+    /**
+     * toggleMenu:
+     * 
+     * Toggles the menu visibility
+     */
+    toggleMenu() {
+        if (this.menu.element.getAttribute("hidden") == "hidden") {
+            this.menu.element.removeAttribute("hidden");
+        }
+        else {
+            this.menu.element.setAttribute("hidden", "hidden");
+        }
+    }
+
 
     /**
      * processOptions:
@@ -58,11 +78,11 @@ class UI {
      * @param {Object} options 
      */
     processOptions(options) {
-        if (options.backgroundColor) {
-            this.backgroundColor = options.backgroundColor;
+        if (options.windowBackgroundColor) {
+            this.windowBackgroundColor = options.windowBackgroundColor;
         }
         else {
-            this.backgroundColor = "black";
+            this.windowBackgroundColor = "black";
         }
     }
 
@@ -74,6 +94,6 @@ class UI {
     setBodyStyle() {
         let style = document.body.style;
         style.setProperty("overflow", "hidden", "important");
-        style.setProperty("background-color", this.backgroundColor);
+        style.setProperty("background-color", this.windowBackgroundColor);
     }
 }

@@ -1,17 +1,55 @@
 /*
- * OSDMeasureAndAnnotate.js
+ * OSDMeasure.js
  * 
  * Plugin for OpenSeadragon that allows for measuring
  * as well as annotation on the same image.
  * 
  * By Nicholas Verrochi and Vidhya Sree N
- * For CS410 - The Axolotl Project
  * 
  * Requires OpenSeadragon, Annotorious, Fabric.js, 
  * and the OpenSeadragon Fabric.js Overlay plugin
  */
 
-class OSDMeasureAndAnnotate {
+class OSDMeasure {
+
+    /**
+     * APIs used by the plugin
+     */
+    viewer; // the OpenSeadragon viewer
+    overlay; // the fabric.js overlay, contains the canvas
+    fabricCanvas; // the fabric.js canvas to draw shapes on
+    annotations; // annotorious plugin for annotations
+
+    /**
+     * Flags
+     */
+    isMeasuring; // flag to indicate when user is mid-measurement (one point marked)
+    useBuiltInUI; // when true, will setup the built-in UI after starting
+
+    /**
+     * Data
+     */
+    measurements; // holds measurements taken in an array
+    p1; // start point of the measurement
+    p2; // end point of the measurement
+    redoStack; // populated upon undo - this way the user can go back again
+
+    /**
+     * Customization options 
+     */
+    conversionFactor; // factor to multiply for converting from pixels
+    measurementColor; // color to render measurement markings
+    menuOptions; // options object to be passed to the built-in UI if used
+    units; // string to indicate what units are used, for example "um" 
+
+    /**
+     * constructor
+     * 
+     * Sets up the viewer by starting a fabric.js overlay and wiring callbacks
+     * 
+     * @param {OpenSeadragon} viewer: the OpenSeadragon viewer
+     * @param {Object} options: object used to customize settings
+     */
     constructor(viewer, options = {}) {
         this.viewer = viewer;
 
@@ -34,9 +72,6 @@ class OSDMeasureAndAnnotate {
         this.measurements = [];
         // temporarily stores undone measurements
         this.redoStack = [];
-
-        // measurement marking color
-        this.measurementColor = "#000000";
 
         // save annotations after creations
         this.annotations.on('createAnnotation', () => {
@@ -66,17 +101,6 @@ class OSDMeasureAndAnnotate {
     }
 
     processOptions(options) {
-        if (options.useDefaultUI) {
-            if (options.menuOptions) {
-                this.menuOptions = options.menuOptions;
-            }
-            else {
-                this.menuOptions = {};
-            }
-            let ui = new UI(this.menuOptions);
-            ui.addToDocument();
-        }
-
         if (options.conversionFactor) {
             this.conversionFactor = options.conversionFactor;
         }
@@ -89,6 +113,24 @@ class OSDMeasureAndAnnotate {
         }
         else {
             this.units = "px";
+        }
+
+        if (options.measurementColor) {
+            this.measurementColor = options.measurementColor;
+        }
+        else {
+            this.measurementColor = "#000000"
+        }
+
+        if (options.useBuiltInUI) {
+            if (options.menuOptions) {
+                this.menuOptions = options.menuOptions;
+            }
+            else {
+                this.menuOptions = {};
+            }
+            let ui = new UI(this, this.menuOptions);
+            ui.addToDocument();
         }
     }
 
@@ -129,76 +171,6 @@ class OSDMeasureAndAnnotate {
     }
 
     /**
-     * saveInLocalStorage:
-     *     Saves the measurements and annotations in localStorage in JSON format
-     */
-    saveInLocalStorage() {
-        // we can use the tileSource as a key to identify which image we are working with
-        let currentTileSource = this.viewer.tileSources; // for now only works with one source
-        let json = JSON.stringify({
-            measurements: this.measurements,
-            redoStack: this.redoStack,
-            annotations: this.annotations.getAnnotations(),
-            color: this.color
-        });
-        localStorage.setItem(currentTileSource, json);
-    }
-
-    /**
-     * loadFromLocalStorage:
-     *     Loads any existing measurements from localStorage
-     */
-    loadFromLocalStorage() {
-        // we will use the image name as a key
-        let currentTileSource = this.viewer.tileSources;
-        let data = JSON.parse(localStorage.getItem(currentTileSource));
-        // make sure we have data
-        if (data != null) {
-            // we have to add the measurements one-by-one 
-            for (let i = 0; i < data.measurements.length; i++) {
-                // JSON.stringify() strips our methods from Measurement objects,
-                // so we have to re-construct all of them one-by-one
-                let measurement = new Measurement(
-                    new Point(parseInt(data.measurements[i].p1.x), parseInt(data.measurements[i].p1.y), data.measurements[i].color),
-                    new Point(parseInt(data.measurements[i].p2.x), parseInt(data.measurements[i].p2.y), data.measurements[i].color),
-                    data.measurements[i].name, data.measurements[i].color, this.conversionFactor, this.units
-                );
-                this.measurements.push(measurement);
-            }
-            // now for the redo stack
-            for (let i = 0; i < data.redoStack.length; i++) {
-                this.redoStack.push(new Measurement(
-                    new Point(parseInt(data.redoStack[i].p1.x), parseInt(data.redoStack[i].p1.y), data.redoStack[i].color),
-                    new Point(parseInt(data.redoStack[i].p2.x), parseInt(data.redoStack[i].p2.y), data.redoStack[i].color),
-                    data.redoStack[i].name, data.redoStack[i].color, this.conversionFactor, this.units
-                ));
-            }
-            for (let i = 0; i < data.annotations.length; i++) {
-                // Annotorious is set up to take the stripped objects from the JSON
-                this.annotations.addAnnotation(data.annotations[i]);
-            }
-            this.color = data.color;
-            // render the measurements
-            this.renderAllMeasurements();
-        }
-    }
-
-    /**
-     * renderAllMeasurements:
-     *     Renders all measurements
-     */
-    renderAllMeasurements() {
-        this.fabricCanvas.clear();
-        let zoom = this.viewer.viewport.getZoom();
-        for (let i = 0; i < this.measurements.length; i++) {
-            this.measurements[i].render(this.fabricCanvas, zoom);
-        }
-        if (this.isMeasuring && this.p1 != null) {
-            this.p1.render(this.fabricCanvas, zoom);
-        }
-    }
-
-    /**
      * clear:
      *     Erases all saved data (measurements and annotations) for
      *     this specific image from localStorage and clears fabric
@@ -213,72 +185,6 @@ class OSDMeasureAndAnnotate {
         this.p1 = null;
         this.p2 = null;
         document.dispatchEvent(new Event("measurements-reset"));
-    }
-
-    /**
-     * undo:
-     *     Undose the last action - if mid-measurement, the first
-     *     point is erased and the user will have to start over.
-     *     Otherwise, the last created measurement is erased.
-     */
-    undo() {
-        if (this.isMeasuring) { // we have a point
-            // store the point for redo
-            this.redoStack.push(this.p1);
-            this.p1 = null;
-            this.isMeasuring = !this.isMeasuring;
-            this.renderAllMeasurements();
-        }
-        else if (this.measurements.length > 0) { // we have a whole measurement
-            // pop out of measurements and into redoStack
-            this.redoStack.push(this.measurements.pop());
-            this.saveInLocalStorage();
-            this.renderAllMeasurements();
-            document.dispatchEvent(new Event("measurement-removed"));
-        }
-
-    }
-
-    /**
-     * redo:
-     *     replaces the last undone measurement or point if there are any in the stack
-     */
-    redo() {
-        if (this.redoStack.length > 0) {
-            let lastObject = this.redoStack.pop();
-            // get zoom level for rendering
-            let zoom = this.viewer.viewport.getZoom();
-            // if it's a point, handle it as such
-            if (lastObject instanceof Point) {
-                this.p1 = lastObject;
-                this.p1.render(this.fabricCanvas, zoom);
-                // set isMeasuring so the next double-click finishes the measurement
-                this.isMeasuring = true;
-            }
-            else { // it's a measurement
-                this.measurements.push(lastObject);
-                lastObject.render(this.fabricCanvas, zoom);
-                // can't forget to save!
-                this.saveInLocalStorage();
-                // dispatch event to replace it in the measurement list
-                document.dispatchEvent(new Event("measurement-added"));
-            }
-        }
-    }
-
-    /**
-     * setMeasurementColor:
-     *     changes color of measurement markings, also when
-     *     mid-measurement, changes the color of the first marking
-     */
-    setMeasurementColor(color) {
-        this.measurementColor = color;
-        if (this.isMeasuring) {
-            // have to re-color the marking already placed
-            this.p1.color = this.measurementColor;
-            this.p1.fabricObject.remove();
-            this.p1.render(this.fabricCanvas, this.viewer.viewport.getZoom());
-        }
     }
 
     /**
@@ -311,5 +217,142 @@ class OSDMeasureAndAnnotate {
         link.click();
         // clean up
         document.body.removeChild(link);
+    }
+
+    /**
+     * loadFromLocalStorage:
+     *     Loads any existing measurements from localStorage
+     */
+    loadFromLocalStorage() {
+        // we will use the image name as a key
+        let currentTileSource = this.viewer.tileSources;
+        let data = JSON.parse(localStorage.getItem(currentTileSource));
+        // make sure we have data
+        if (data != null) {
+            // we have to add the measurements one-by-one 
+            for (let i = 0; i < data.measurements.length; i++) {
+                // JSON.stringify() strips our methods from Measurement objects,
+                // so we have to re-construct all of them one-by-one
+                let measurement = new Measurement(
+                    new Point(parseInt(data.measurements[i].p1.x), parseInt(data.measurements[i].p1.y), data.measurements[i].color),
+                    new Point(parseInt(data.measurements[i].p2.x), parseInt(data.measurements[i].p2.y), data.measurements[i].color),
+                    data.measurements[i].name, data.measurements[i].color, this.conversionFactor, this.units
+                );
+                this.measurements.push(measurement);
+                document.dispatchEvent(new Event("measurement-added"));
+            }
+            // now for the redo stack
+            for (let i = 0; i < data.redoStack.length; i++) {
+                this.redoStack.push(new Measurement(
+                    new Point(parseInt(data.redoStack[i].p1.x), parseInt(data.redoStack[i].p1.y), data.redoStack[i].color),
+                    new Point(parseInt(data.redoStack[i].p2.x), parseInt(data.redoStack[i].p2.y), data.redoStack[i].color),
+                    data.redoStack[i].name, data.redoStack[i].color, this.conversionFactor, this.units
+                ));
+            }
+            for (let i = 0; i < data.annotations.length; i++) {
+                // Annotorious is set up to take the stripped objects from the JSON
+                this.annotations.addAnnotation(data.annotations[i]);
+            }
+            this.measurementColor = data.color;
+            // render the measurements
+            this.renderAllMeasurements();
+        }
+    }
+
+    /**
+     * redo:
+     *     replaces the last undone measurement or point if there are any in the stack
+     */
+    redo() {
+        if (this.redoStack.length > 0) {
+            let lastObject = this.redoStack.pop();
+            // get zoom level for rendering
+            let zoom = this.viewer.viewport.getZoom();
+            // if it's a point, handle it as such
+            if (lastObject instanceof Point) {
+                this.p1 = lastObject;
+                this.p1.render(this.fabricCanvas, zoom);
+                // set isMeasuring so the next double-click finishes the measurement
+                this.isMeasuring = true;
+            }
+            else { // it's a measurement
+                this.measurements.push(lastObject);
+                lastObject.render(this.fabricCanvas, zoom);
+                // can't forget to save!
+                this.saveInLocalStorage();
+                // dispatch event to replace it in the measurement list
+                document.dispatchEvent(new Event("measurement-added"));
+            }
+        }
+    }
+
+    /**
+     * renderAllMeasurements:
+     *     Renders all measurements
+     */
+    renderAllMeasurements() {
+        this.fabricCanvas.clear();
+        let zoom = this.viewer.viewport.getZoom();
+        for (let i = 0; i < this.measurements.length; i++) {
+            this.measurements[i].render(this.fabricCanvas, zoom);
+        }
+        if (this.isMeasuring && this.p1 != null) {
+            this.p1.render(this.fabricCanvas, zoom);
+        }
+    }
+
+    /**
+     * saveInLocalStorage:
+     *     Saves the measurements and annotations in localStorage in JSON format
+     */
+    saveInLocalStorage() {
+        // we can use the tileSource as a key to identify which image we are working with
+        let currentTileSource = this.viewer.tileSources; // for now only works with one source
+        let json = JSON.stringify({
+            measurements: this.measurements,
+            redoStack: this.redoStack,
+            annotations: this.annotations.getAnnotations(),
+            color: this.measurementColor
+        });
+        localStorage.setItem(currentTileSource, json);
+    }
+
+    /**
+     * setMeasurementColor:
+     *     changes color of measurement markings, also when
+     *     mid-measurement, changes the color of the first marking
+     */
+    setMeasurementColor(color) {
+        this.measurementColor = color;
+        if (this.isMeasuring) {
+            // have to re-color the marking already placed
+            this.p1.color = this.measurementColor;
+            this.p1.fabricObject.remove();
+            this.p1.render(this.fabricCanvas, this.viewer.viewport.getZoom());
+        }
+    }
+
+    /**
+     * undo:
+     *     Undose the last action - if mid-measurement, the first
+     *     point is erased and the user will have to start over.
+     *     Otherwise, the last created measurement is erased.
+     */
+    undo() {
+        if (this.isMeasuring) { // we have a point
+            // store the point for redo
+            this.redoStack.push(this.p1);
+            this.p1 = null;
+            this.isMeasuring = !this.isMeasuring;
+            this.renderAllMeasurements();
+        }
+        else if (this.measurements.length > 0) { // we have a whole measurement
+            // pop out of measurements and into redoStack
+            this.redoStack.push(this.measurements.pop());
+            this.saveInLocalStorage();
+            this.renderAllMeasurements();
+            document.dispatchEvent(new Event("measurement-removed"));
+        }
+
     }
 }
