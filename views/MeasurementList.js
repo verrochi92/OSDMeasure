@@ -26,6 +26,7 @@ class MeasurementList {
     constructor(plugin) {
         this.plugin = plugin;
         this.element = document.createElement("ul");
+        this.element.style.setProperty("list-style", "none");
 
         // add new list item when measurement added
         document.addEventListener("measurement-added", this.addMeasurement.bind(this), false);

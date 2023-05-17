@@ -94,7 +94,7 @@ class Menu {
         style.setProperty("right", "0%");
         style.setProperty("z-index", "2");
         // sizing
-        style.setProperty("width", "25%");
+        style.setProperty("width", "20%");
         style.setProperty("padding", "1%");
         // coloring and opacity
         style.setProperty("background", "rgba(0, 0, 0, 0.75)");

@@ -100,40 +100,6 @@ class OSDMeasure {
         this.loadFromLocalStorage();
     }
 
-    processOptions(options) {
-        if (options.conversionFactor) {
-            this.conversionFactor = options.conversionFactor;
-        }
-        else {
-            this.conversionFactor = 1;
-        }
-
-        if (options.units) {
-            this.units = options.units;
-        }
-        else {
-            this.units = "px";
-        }
-
-        if (options.measurementColor) {
-            this.measurementColor = options.measurementColor;
-        }
-        else {
-            this.measurementColor = "#000000"
-        }
-
-        if (options.useBuiltInUI) {
-            if (options.menuOptions) {
-                this.menuOptions = options.menuOptions;
-            }
-            else {
-                this.menuOptions = {};
-            }
-            let ui = new UI(this, this.menuOptions);
-            ui.addToDocument();
-        }
-    }
-
     /*
      * addMeasurement:
      *     Only called in measuring mode - places a new point onto the canvas,
@@ -257,6 +223,48 @@ class OSDMeasure {
             this.measurementColor = data.color;
             // render the measurements
             this.renderAllMeasurements();
+        }
+    }
+
+    /**
+     * processOptions:
+     * 
+     * Stores customization options in the object proper
+     * Loads the built-in UI if chosen for use
+     * 
+     * @param {Object} options 
+     */
+    processOptions(options) {
+        if (options.conversionFactor) {
+            this.conversionFactor = options.conversionFactor;
+        }
+        else {
+            this.conversionFactor = 1;
+        }
+
+        if (options.units) {
+            this.units = options.units;
+        }
+        else {
+            this.units = "px";
+        }
+
+        if (options.measurementColor) {
+            this.measurementColor = options.measurementColor;
+        }
+        else {
+            this.measurementColor = "#000000"
+        }
+
+        if (options.useBuiltInUI) {
+            if (options.menuOptions) {
+                this.menuOptions = options.menuOptions;
+            }
+            else {
+                this.menuOptions = {};
+            }
+            let ui = new UI(this);
+            ui.addToDocument();
         }
     }
 
