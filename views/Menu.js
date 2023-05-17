@@ -99,5 +99,6 @@ class Menu {
         style.setProperty("padding", "1%");
         // coloring and opacity
         style.setProperty("background", "rgba(0, 0, 0, 0.75)");
+        style.setProperty("color", "white"); // text color
     }
 }
