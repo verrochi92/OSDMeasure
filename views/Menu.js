@@ -15,6 +15,7 @@ class Menu {
      */
     element; // holds the entire menu
     colorSelector; // color input to select measurement color
+    measurementList; // dynamically displays measurements added
 
     /**
      * constructor
@@ -39,6 +40,10 @@ class Menu {
         this.colorSelector.addEventListener("change", this.handleColorChange.bind(this), false);
         this.setColorSelectorStyle();
         this.element.appendChild(this.colorSelector);
+
+        // create measurement list
+        this.measurementList = new MeasurementList(this.plugin);
+        this.element.appendChild(this.measurementList.element);
     }
 
     /**

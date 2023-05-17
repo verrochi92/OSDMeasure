@@ -239,6 +239,7 @@ class OSDMeasure {
                     data.measurements[i].name, data.measurements[i].color, this.conversionFactor, this.units
                 );
                 this.measurements.push(measurement);
+                document.dispatchEvent(new Event("measurement-added"));
             }
             // now for the redo stack
             for (let i = 0; i < data.redoStack.length; i++) {
