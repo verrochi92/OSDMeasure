@@ -87,9 +87,7 @@ class OSDMeasure {
         });
 
         // re-render on page event (change in zoom)
-        this.viewer.addHandler('zoom', () => {
-            this.renderAllMeasurements();
-        });
+        this.viewer.addHandler('zoom', this.adjustToZoom.bind(this));
 
         // re-render on rotation
         this.viewer.addHandler('rotate', () => {
@@ -110,26 +108,43 @@ class OSDMeasure {
         let imagePoint = this.viewer.viewport.viewportToImageCoordinates(viewportPoint);
         let zoom = this.viewer.viewport.getZoom();
         if (this.isMeasuring) { // already have a point, so complete the measurement
-            this.p2 = new Point(imagePoint.x, imagePoint.y, this.measurementColor);
+            this.p2 = new Point(imagePoint.x, imagePoint.y, this.measurementColor, this.fabricCanvas);
             let measurement = new Measurement(
                 this.p1, this.p2,
                 `M${this.measurements.length + 1}`,
-                this.measurementColor, this.conversionFactor, this.units
+                this.measurementColor, this.conversionFactor, this.units, this.fabricCanvas
             );
             // have to remove the original first dot - looking for a workaround
-            this.fabricCanvas.remove(this.p1.fabricObject);
-            measurement.render(this.fabricCanvas, zoom);
+            measurement.render(zoom);
             this.measurements.push(measurement);
             this.saveInLocalStorage();
             // dispatch an event to let it be known there is a new measurement
             document.dispatchEvent(new Event("measurement-added"));
         } else { // place the first point
-            this.p1 = new Point(imagePoint.x, imagePoint.y, this.measurementColor);
-            this.p1.render(this.fabricCanvas, zoom);
+            this.p1 = new Point(imagePoint.x, imagePoint.y, this.measurementColor, this.fabricCanvas);
+            this.p1.render(zoom);
         }
         // have to blow out the redo stack since we made a new measurement
         this.redoStack = [];
         this.isMeasuring = !this.isMeasuring;
+    }
+
+    /**
+     * adjustToZoom:
+     * 
+     * Adjusts the sizes of all fabric.js objects based on zoom
+     */
+    adjustToZoom() {
+        let zoom = this.viewer.viewport.getZoom();
+        for (let i = 0; i < this.measurements.length; i++) {
+            this.measurements[i].adjustToZoom(zoom);
+        }
+        if (this.p1 != null) {
+            this.p1.adjustToZoom(zoom);
+        }
+        if (this.p2 != null) {
+            this.p2.adjustToZoom(zoom);
+        }
     }
 
     /**
@@ -197,9 +212,17 @@ class OSDMeasure {
                 // JSON.stringify() strips our methods from Measurement objects,
                 // so we have to re-construct all of them one-by-one
                 let measurement = new Measurement(
-                    new Point(parseInt(data.measurements[i].p1.x), parseInt(data.measurements[i].p1.y), data.measurements[i].color),
-                    new Point(parseInt(data.measurements[i].p2.x), parseInt(data.measurements[i].p2.y), data.measurements[i].color),
-                    data.measurements[i].name, data.measurements[i].color, this.conversionFactor, this.units
+                    new Point(
+                        parseInt(data.measurements[i].p1.x), 
+                        parseInt(data.measurements[i].p1.y), 
+                        data.measurements[i].color, this.fabricCanvas
+                    ),
+                    new Point(
+                        parseInt(data.measurements[i].p2.x), 
+                        parseInt(data.measurements[i].p2.y), 
+                        data.measurements[i].color, this.fabricCanvas
+                    ),
+                    data.measurements[i].name, data.measurements[i].color, this.conversionFactor, this.units, this.fabricCanvas
                 );
                 this.measurements.push(measurement);
                 document.dispatchEvent(new Event("measurement-added"));
@@ -207,9 +230,9 @@ class OSDMeasure {
             // now for the redo stack
             for (let i = 0; i < data.redoStack.length; i++) {
                 this.redoStack.push(new Measurement(
-                    new Point(parseInt(data.redoStack[i].p1.x), parseInt(data.redoStack[i].p1.y), data.redoStack[i].color),
-                    new Point(parseInt(data.redoStack[i].p2.x), parseInt(data.redoStack[i].p2.y), data.redoStack[i].color),
-                    data.redoStack[i].name, data.redoStack[i].color, this.conversionFactor, this.units
+                    new Point(parseInt(data.redoStack[i].p1.x), parseInt(data.redoStack[i].p1.y), data.redoStack[i].color, this.fabricCanvas),
+                    new Point(parseInt(data.redoStack[i].p2.x), parseInt(data.redoStack[i].p2.y), data.redoStack[i].color, this.fabricCanvas),
+                    data.redoStack[i].name, data.redoStack[i].color, this.conversionFactor, this.units, this.fabricCanvas
                 ));
             }
             for (let i = 0; i < data.annotations.length; i++) {
@@ -254,12 +277,6 @@ class OSDMeasure {
         }
 
         if (options.useBuiltInUI) {
-            if (options.menuOptions) {
-                this.menuOptions = options.menuOptions;
-            }
-            else {
-                this.menuOptions = {};
-            }
             let ui = new UI(this);
             ui.addToDocument();
         }
@@ -277,13 +294,13 @@ class OSDMeasure {
             // if it's a point, handle it as such
             if (lastObject instanceof Point) {
                 this.p1 = lastObject;
-                this.p1.render(this.fabricCanvas, zoom);
+                this.p1.render(zoom);
                 // set isMeasuring so the next double-click finishes the measurement
                 this.isMeasuring = true;
             }
             else { // it's a measurement
                 this.measurements.push(lastObject);
-                lastObject.render(this.fabricCanvas, zoom);
+                lastObject.render(zoom);
                 // can't forget to save!
                 this.saveInLocalStorage();
                 // dispatch event to replace it in the measurement list
