@@ -24,7 +24,7 @@ Once the dependencies and plugin are setup, simply include them in the HTML:
 
 You will need to instantiate an OpenSeadragon viewer with the following options: 
 
-`
+```
     let viewer = new OpenSeadragon({
         id: "viewer",
         prefixUrl: "https://openseadragon.github.io/openseadragon/images/",
@@ -34,7 +34,7 @@ You will need to instantiate an OpenSeadragon viewer with the following options:
         useCanvas: true,
         preventDefaultAction: true
     });
-`
+```
 
 Where "`"viewer"`" is the id of the HTML element used and `tileSource`" is the directory to the image to load into the viewer.
 Other options can be customized without affecting OSDMeasure. (As far as I know! If you find otherwise, please let me know!)
