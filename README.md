@@ -36,8 +36,9 @@ You will need to instantiate an OpenSeadragon viewer with the following options:
     });
 ```
 
-Where "`"viewer"`" is the id of the HTML element used and `tileSource`" is the directory to the image to load into the viewer.
-Other options can be customized without affecting OSDMeasure. (As far as I know! If you find otherwise, please let me know!)
+Where `"viewer"` is the id of the HTML element to create the viewer and `tileSource` is the directory to the image to load into the viewer.
+Other options can be customized without affecting OSDMeasure. (As far as I know! If you find otherwise, please let me know!) 
+The bigger the viewer, the better, especially if using our custom UI, I recommend setting height and width to 100%.
 Please see the [OpenSeadragon documentation](http://openseadragon.github.io/docs/) or some of the 
 [examples](http://openseadragon.github.io/#examples-and-features) to learn more if you are unfamiliar.
 
