@@ -35,7 +35,6 @@ class Menu {
         // create color selector
         this.colorSelector = document.createElement("input");
         this.colorSelector.setAttribute("type", "color");
-        this.colorSelector.value = plugin.measurementColor; // set color from plugin
         // handler for changing color
         this.colorSelector.addEventListener("change", this.handleColorChange.bind(this), false);
         this.setColorSelectorStyle();
@@ -44,6 +43,9 @@ class Menu {
         // create measurement list
         this.measurementList = new MeasurementList(this.plugin);
         this.element.appendChild(this.measurementList.element);
+
+        // set starting color after data loaded (color maintained upon restarting)
+        document.addEventListener("data-loaded", this.updateColor.bind(this));
     }
 
     /**
@@ -94,10 +96,21 @@ class Menu {
         style.setProperty("right", "0%");
         style.setProperty("z-index", "2");
         // sizing
-        style.setProperty("width", "25%");
+        style.setProperty("width", "20%");
         style.setProperty("padding", "1%");
         // coloring and opacity
         style.setProperty("background", "rgba(0, 0, 0, 0.75)");
         style.setProperty("color", "white"); // text color
+    }
+
+    /**
+     * updateColor:
+     * 
+     * Callback that sets the color swatch properly after loading
+     * Needed because color selection saved between sessions
+     */
+    updateColor() {
+        let color = this.plugin.measurementColor;
+        this.colorSelector.value = color;
     }
 }
