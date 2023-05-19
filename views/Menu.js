@@ -112,5 +112,6 @@ class Menu {
     updateColor() {
         let color = this.plugin.measurementColor;
         this.colorSelector.value = color;
+        this.plugin.setMeasurementColor(color);
     }
 }
