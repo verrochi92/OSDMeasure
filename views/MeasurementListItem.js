@@ -33,6 +33,7 @@ class MeasurementListItem {
         this.nameField = document.createElement("input");
         this.nameField.setAttribute("type", "text");
         this.nameField.value = this.measurement.name;
+        this.nameField.addEventListener("change", this.updateName.bind(this));
         this.setNameFieldStyle();
         this.element.appendChild(this.nameField);
 
@@ -62,5 +63,6 @@ class MeasurementListItem {
      */
     updateName() {
         this.measurement.name = this.nameField.value;
+        this.plugin.saveInLocalStorage();
     }
 }

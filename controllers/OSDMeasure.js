@@ -18,7 +18,6 @@ class OSDMeasure {
     viewer; // the OpenSeadragon viewer
     overlay; // the fabric.js overlay, contains the canvas
     fabricCanvas; // the fabric.js canvas to draw shapes on
-    annotations; // annotorious plugin for annotations
 
     /**
      * Flags
@@ -55,12 +54,11 @@ class OSDMeasure {
 
         this.processOptions(options);
 
-        // pull in the two libraries
+        // setup the fabric canvas and turn off zoom on click
         this.overlay = viewer.fabricjsOverlay();
         this.fabricCanvas = this.overlay.fabricCanvas();
         this.viewer.gestureSettingsMouse.clickToZoom = false;
         this.viewer.gestureSettingsTouch.clickToZoom = false;
-        this.annotations = OpenSeadragon.Annotorious(viewer);
 
         this.isMeasuring = false; // toggles when user places first point of a measurement
 
@@ -72,11 +70,6 @@ class OSDMeasure {
         this.measurements = [];
         // temporarily stores undone measurements
         this.redoStack = [];
-
-        // save annotations after creations
-        this.annotations.on('createAnnotation', () => {
-            this.saveInLocalStorage();
-        })
 
         // add our custom handler for measurements
         this.viewer.addHandler('canvas-double-click', (event) => {
@@ -160,7 +153,6 @@ class OSDMeasure {
         }
         this.measurements = [];
         this.redoStack = [];
-        this.annotations.clearAnnotations();
         this.p1 = null;
         this.p2 = null;
         document.dispatchEvent(new Event("measurements-reset"));
@@ -236,10 +228,6 @@ class OSDMeasure {
                     new Point(parseInt(data.redoStack[i].p2.x), parseInt(data.redoStack[i].p2.y), data.redoStack[i].color, this.fabricCanvas),
                     data.redoStack[i].name, data.redoStack[i].color, this.conversionFactor, this.units, this.fabricCanvas
                 ));
-            }
-            for (let i = 0; i < data.annotations.length; i++) {
-                // Annotorious is set up to take the stripped objects from the JSON
-                this.annotations.addAnnotation(data.annotations[i]);
             }
             this.measurementColor = data.color;
             document.dispatchEvent(new Event("data-loaded"));
@@ -339,7 +327,6 @@ class OSDMeasure {
         let json = JSON.stringify({
             measurements: this.measurements,
             redoStack: this.redoStack,
-            annotations: this.annotations.getAnnotations(),
             color: this.measurementColor
         });
         localStorage.setItem(currentTileSource, json);
@@ -355,8 +342,9 @@ class OSDMeasure {
         if (this.isMeasuring) {
             // have to re-color the marking already placed
             this.p1.color = this.measurementColor;
-            this.p1.fabricObject.remove();
-            this.p1.render(this.viewer.viewport.getZoom());
+            this.p1.fabricObject.fill = this.measurementColor;
+            this.fabricCanvas.renderAll();
+            this.saveInLocalStorage(); // restore color after reloading
         }
     }
 
