@@ -18,13 +18,15 @@ class Point {
     fabricObject; // the circle marking the point
 
     /**
+     * constructor
      * 
-     * @param {*} x 
-     * @param {*} y 
-     * @param {*} color 
-     * @param {*} fabricCanvas 
+     * Creates a point that can be rendered on the canvas
+     * 
+     * @param {int} x 
+     * @param {int} y 
+     * @param {string} color 
+     * @param {fabricCanvas} fabricCanvas 
      */
-
     constructor(x, y, color, fabricCanvas) {
         this.x = x;
         this.y = y;
@@ -40,6 +42,17 @@ class Point {
             fill: this.color,
             radius: 150
         });
+    }
+
+    /**
+     * adjustToZoom:
+     * 
+     * Adjusts size of the circle based on zoom level
+     * 
+     * @param {float} zoom: zoom ratio to adjust to
+     */
+    adjustToZoom(zoom) {
+        this.fabricObject.setRadius(150 / (zoom * 1.5));
     }
 
     /**
@@ -59,18 +72,7 @@ class Point {
      * @param {float} zoom: zoom ratio
      */
     render(zoom) {
+        this.adjustToZoom(zoom); // needs to be called first for some silly reason
         this.fabricCanvas.add(this.fabricObject);
-        this.adjustToZoom(zoom);
-    }
-
-    /**
-     * adjustToZoom:
-     * 
-     * Adjusts size of the circle based on zoom level
-     * 
-     * @param {float} zoom: zoom ratio to adjust to
-     */
-    adjustToZoom(zoom) {
-        this.fabricObject.setRadius(150 / (zoom * 1.5));
     }
 }

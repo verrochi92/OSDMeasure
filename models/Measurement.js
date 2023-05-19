@@ -18,7 +18,6 @@ class Measurement {
     /**
      * fabric.js objects
      */
-    fabricGroup; // stores the fabric.js objects used to render the measurement
     fabricCanvas; // the canvas on which to render the fabric.js objects
     line; // line between the two points
     textObject; // text displaying the distance
@@ -48,7 +47,6 @@ class Measurement {
         // convert to proper units
         this.distance *= conversionFactor;
         this.fabricCanvas = fabricCanvas;
-        this.fabricGroup = new fabric.Group();
     }
 
     /**
@@ -63,6 +61,8 @@ class Measurement {
         this.p2.adjustToZoom(zoom);
         this.line.strokeWidth = 50 / zoom;
         this.textObject.fontSize = 300 / zoom;
+        // adjust distance between right-most point and text
+        this.textObject.left = Math.max(this.p1.x, this.p2.x) + 100 / zoom;
     }
 
     /**
@@ -71,7 +71,10 @@ class Measurement {
      * Removes the fabric group from the canvas
      */
     remove() {
-        this.fabricCanvas.remove(this.fabricGroup);
+        this.p1.remove();
+        this.p2.remove();
+        this.fabricCanvas.remove(this.line);
+        this.fabricCanvas.remove(this.textObject);
     }
 
     /**
@@ -82,9 +85,6 @@ class Measurement {
      * @param {float} zoom: zoom ratio of the viewer
      */
     render(zoom) {
-        this.fabricGroup.add(this.p1.fabricObject);
-        this.fabricGroup.add(this.p2.fabricObject);
-
         // draw line between p1 and p2
         this.line = new fabric.Line([this.p1.x, this.p1.y, this.p2.x, this.p2.y], {
             originX: 'center',
@@ -92,7 +92,8 @@ class Measurement {
             stroke: this.color,
             strokeWidth: 50 / zoom
         });
-        this.fabricGroup.add(this.line);
+        this.fabricCanvas.add(this.line);
+
         // create text object to display measurement
         let text = (this.distance).toFixed(3) + " " + this.units;
         this.textObject = new fabric.Text(text, {
@@ -101,9 +102,6 @@ class Measurement {
             fontSize: 300 / zoom,
             fill: this.color
         });
-        this.fabricGroup.add(this.textObject);
-
-        this.fabricCanvas.add(this.fabricGroup);
-        this.adjustToZoom();
+        this.fabricCanvas.add(this.textObject);
     }
 }

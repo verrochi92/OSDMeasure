@@ -109,12 +109,12 @@ class OSDMeasure {
         let zoom = this.viewer.viewport.getZoom();
         if (this.isMeasuring) { // already have a point, so complete the measurement
             this.p2 = new Point(imagePoint.x, imagePoint.y, this.measurementColor, this.fabricCanvas);
+            this.p2.render(zoom);
             let measurement = new Measurement(
                 this.p1, this.p2,
                 `M${this.measurements.length + 1}`,
                 this.measurementColor, this.conversionFactor, this.units, this.fabricCanvas
             );
-            // have to remove the original first dot - looking for a workaround
             measurement.render(zoom);
             this.measurements.push(measurement);
             this.saveInLocalStorage();
@@ -155,7 +155,9 @@ class OSDMeasure {
      */
     clear() {
         localStorage.removeItem(this.viewer.tileSources);
-        this.fabricCanvas.clear();
+        for (let i = 0; i < this.measurements.length; i++) {
+            this.measurements[i].remove();
+        }
         this.measurements = [];
         this.redoStack = [];
         this.annotations.clearAnnotations();
@@ -300,6 +302,8 @@ class OSDMeasure {
             }
             else { // it's a measurement
                 this.measurements.push(lastObject);
+                lastObject.p1.render(zoom);
+                lastObject.p2.render(zoom);
                 lastObject.render(zoom);
                 // can't forget to save!
                 this.saveInLocalStorage();
@@ -314,13 +318,14 @@ class OSDMeasure {
      *     Renders all measurements
      */
     renderAllMeasurements() {
-        this.fabricCanvas.clear();
         let zoom = this.viewer.viewport.getZoom();
         for (let i = 0; i < this.measurements.length; i++) {
-            this.measurements[i].render(this.fabricCanvas, zoom);
+            this.measurements[i].p1.render(zoom);
+            this.measurements[i].p2.render(zoom);
+            this.measurements[i].render(zoom);
         }
         if (this.isMeasuring && this.p1 != null) {
-            this.p1.render(this.fabricCanvas, zoom);
+            this.p1.render(zoom);
         }
     }
 
@@ -351,7 +356,7 @@ class OSDMeasure {
             // have to re-color the marking already placed
             this.p1.color = this.measurementColor;
             this.p1.fabricObject.remove();
-            this.p1.render(this.fabricCanvas, this.viewer.viewport.getZoom());
+            this.p1.render(this.viewer.viewport.getZoom());
         }
     }
 
@@ -365,15 +370,16 @@ class OSDMeasure {
         if (this.isMeasuring) { // we have a point
             // store the point for redo
             this.redoStack.push(this.p1);
+            this.p1.remove();
             this.p1 = null;
             this.isMeasuring = !this.isMeasuring;
-            this.renderAllMeasurements();
         }
         else if (this.measurements.length > 0) { // we have a whole measurement
             // pop out of measurements and into redoStack
-            this.redoStack.push(this.measurements.pop());
+            let measurement = this.measurements.pop()
+            measurement.remove();
+            this.redoStack.push(measurement);
             this.saveInLocalStorage();
-            this.renderAllMeasurements();
             document.dispatchEvent(new Event("measurement-removed"));
         }
 
