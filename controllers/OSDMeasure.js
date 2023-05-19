@@ -2,12 +2,11 @@
  * OSDMeasure.js
  * 
  * Plugin for OpenSeadragon that allows for measuring
- * as well as annotation on the same image.
  * 
  * By Nicholas Verrochi and Vidhya Sree N
  * 
- * Requires OpenSeadragon, Annotorious, Fabric.js, 
- * and the OpenSeadragon Fabric.js Overlay plugin
+ * Requires OpenSeadragon, Fabric.js, and 
+ * the OpenSeadragon Fabric.js Overlay plugin
  */
 
 class OSDMeasure {
@@ -54,7 +53,7 @@ class OSDMeasure {
 
         this.processOptions(options);
 
-        // setup the fabric canvas and turn off zoom on click
+        // pull in the two libraries
         this.overlay = viewer.fabricjsOverlay();
         this.fabricCanvas = this.overlay.fabricCanvas();
         this.viewer.gestureSettingsMouse.clickToZoom = false;
@@ -142,9 +141,8 @@ class OSDMeasure {
 
     /**
      * clear:
-     *     Erases all saved data (measurements and annotations) for
-     *     this specific image from localStorage and clears fabric
-     *     objects, measurement data, and annotations.
+     *     Erases all saved data relevant to this specific image from 
+     *     localStorage and clears fabric objects and measurement data.
      */
     clear() {
         localStorage.removeItem(this.viewer.tileSources);
@@ -319,7 +317,7 @@ class OSDMeasure {
 
     /**
      * saveInLocalStorage:
-     *     Saves the measurements and annotations in localStorage in JSON format
+     *     Saves the measurements in localStorage in JSON format
      */
     saveInLocalStorage() {
         // we can use the tileSource as a key to identify which image we are working with
@@ -344,8 +342,8 @@ class OSDMeasure {
             this.p1.color = this.measurementColor;
             this.p1.fabricObject.fill = this.measurementColor;
             this.fabricCanvas.renderAll();
-            this.saveInLocalStorage(); // restore color after reloading
         }
+        this.saveInLocalStorage();
     }
 
     /**
