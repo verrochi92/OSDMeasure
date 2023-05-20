@@ -57,4 +57,26 @@ The second argument is an anonymous object containing the options for the plugin
 3. `measurementColor`: Sets the color to render measurements in. By default this is black, but using he built-in UI, there is an easy way to change colors.
 4. `useBuiltInUI`: Generates a built-in UI, including color selection, naming measurements, and buttons for other functionality.
 
+## The UI
+
+Our UI is simple and clean, and is suitable for most purposes if you are using this library. To open the menu, simply click the icon
+in the top-right corner. There you will see a color selector, a list of measurements if you've taken any, and some buttons for options
+like undo, redo, reset, and export to csv.
+
+## Don't want to use our UI?
+
+That's fine if you want to create your own. There are several keyboard shortcuts that work even if you don't use it. They are as follows:
+
+1. ctrl + z: undo
+2. ctrl + y: redo
+3. ctrl + s: export csv (will download the file)
+4. ctrl + r: reset all measurements (will popup an alert for confirmation)
+
+Measurements can be taken without setting up a UI, but you would want to program these features. Here are some functions to make note of:
+
+1. `undo()`
+2. `redo()`
+3. `exportCSV()`
+4. `clear()` - resets all measurements
+5. `setMeasurementColor()` - changes the color measurements are rendered in
 
