@@ -16,6 +16,7 @@ class Menu {
     element; // holds the entire menu
     colorSelector; // color input to select measurement color
     measurementList; // dynamically displays measurements added
+    buttonBar; // div which holds buttons for operations like undo, etc
 
     /**
      * constructor
@@ -43,6 +44,10 @@ class Menu {
         // create measurement list
         this.measurementList = new MeasurementList(this.plugin);
         this.element.appendChild(this.measurementList.element);
+
+        // create button bar
+        this.buttonBar = new ButtonBar(this.plugin);
+        this.element.appendChild(this.buttonBar.element);
 
         // set starting color after data loaded (color maintained upon restarting)
         document.addEventListener("data-loaded", this.updateColor.bind(this));

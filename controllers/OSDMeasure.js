@@ -86,6 +86,11 @@ class OSDMeasure {
             this.viewer.viewport.rotateTo(0);
         })
 
+        // dispatch correct method on key press
+        document.addEventListener('keydown', (event) => {
+            this.handleKeyPress(event);
+        });
+
         this.loadFromLocalStorage();
     }
 
@@ -190,6 +195,36 @@ class OSDMeasure {
     }
 
     /**
+     * handleKeyPress:
+     * 
+     * Handles keyboard shortcuts
+     */
+    handleKeyPress(event) {
+        // reset
+        if (event.ctrlKey && event.key == 'r') {
+            if (window.confirm("Are you sure you want to reset all measurements and annotations?")) {
+                this.clear();
+            }
+        }
+        // undo
+        else if (event.ctrlKey && event.key == 'z') {
+            this.undo();
+        }
+        // redo
+        else if (event.ctrlKey && event.key == 'y') {
+            this.redo();
+        }
+        // export csv
+        else if (event.ctrlKey && event.key == 's') {
+            this.exportCSV();
+        }
+        // override ctrl presses
+        if (event.ctrlKey) {
+            event.preventDefault();
+        }
+    }
+
+    /**
      * loadFromLocalStorage:
      *     Loads any existing measurements from localStorage
      */
@@ -205,13 +240,13 @@ class OSDMeasure {
                 // so we have to re-construct all of them one-by-one
                 let measurement = new Measurement(
                     new Point(
-                        parseInt(data.measurements[i].p1.x), 
-                        parseInt(data.measurements[i].p1.y), 
+                        parseInt(data.measurements[i].p1.x),
+                        parseInt(data.measurements[i].p1.y),
                         data.measurements[i].color, this.fabricCanvas
                     ),
                     new Point(
-                        parseInt(data.measurements[i].p2.x), 
-                        parseInt(data.measurements[i].p2.y), 
+                        parseInt(data.measurements[i].p2.x),
+                        parseInt(data.measurements[i].p2.y),
                         data.measurements[i].color, this.fabricCanvas
                     ),
                     data.measurements[i].name, data.measurements[i].color, this.conversionFactor, this.units, this.fabricCanvas

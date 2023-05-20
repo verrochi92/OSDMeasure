@@ -37,11 +37,6 @@ class UI {
 
         // wire menu to open when icon clicked
         this.menuButton.element.addEventListener("click", this.toggleMenu.bind(this));
-
-        // dispatch correct method on key press
-        document.addEventListener('keydown', (event) => {
-            this.handleKeyPress.call(this, event); 
-        });
     }
 
     /**
@@ -52,36 +47,6 @@ class UI {
     addToDocument() {
         this.menuButton.addToDocument();
         this.menu.addToDocument();
-    }
-
-    /**
-     * handleKeyPress:
-     * 
-     * Handles keyboard shortcuts
-     */
-    handleKeyPress(event) {
-        // reset
-        if (event.ctrlKey && event.key == 'r') {
-            if (window.confirm("Are you sure you want to reset all measurements and annotations?")) {
-                this.plugin.clear();
-            }
-        }
-        // undo
-        else if (event.ctrlKey && event.key == 'z') {
-            this.plugin.undo();
-        }
-        // redo
-        else if (event.ctrlKey && event.key == 'y') {
-            this.plugin.redo();
-        }
-        // export csv
-        else if (event.ctrlKey && event.key == 'e') {
-            this.plugin.exportCSV();
-        }
-        // override ctrl presses
-        if (event.ctrlKey) {
-            event.preventDefault();
-        }
     }
 
     /**
