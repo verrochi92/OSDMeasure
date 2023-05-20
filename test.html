@@ -1,0 +1,42 @@
+<html>
+
+<head>
+    <title>OSDMeasure</title>
+    <script src="lib/fabricjs.min.js"></script>
+    <script src="lib/openseadragon.min.js"></script>
+    <script src="lib/openseadragon-fabricjs-overlay.js"></script>
+    <script src="dist/OSDMeasure.js"></script>
+    <style>
+        body {
+            overflow: hidden !important;
+        }
+
+        #viewer {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="viewer"></div>
+    <script>
+        window.onload = () => {
+            let viewer = new OpenSeadragon({
+                id: "viewer",
+                prefixUrl: "https://openseadragon.github.io/openseadragon/images/",
+                showNavigator: false,
+                tileSources: "https://verrochi92.github.io/axolotl/data/W255B_0.dzi",
+                sequenceMode: false,
+                useCanvas: true,
+                preventDefaultAction: true
+            });
+
+            let plugin = new OSDMeasure(viewer, {
+                useBuiltInUI: true
+            });
+        };
+    </script>
+</body>
+
+</html>
