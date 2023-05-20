@@ -88,7 +88,7 @@ class OSDMeasure {
 
         // dispatch correct method on key press
         document.addEventListener('keydown', (event) => {
-            this.handleKeyPress.call(this, event);
+            this.handleKeyPress(event);
         });
 
         this.loadFromLocalStorage();
@@ -203,20 +203,20 @@ class OSDMeasure {
         // reset
         if (event.ctrlKey && event.key == 'r') {
             if (window.confirm("Are you sure you want to reset all measurements and annotations?")) {
-                this.plugin.clear();
+                this.clear();
             }
         }
         // undo
         else if (event.ctrlKey && event.key == 'z') {
-            this.plugin.undo();
+            this.undo();
         }
         // redo
         else if (event.ctrlKey && event.key == 'y') {
-            this.plugin.redo();
+            this.redo();
         }
         // export csv
         else if (event.ctrlKey && event.key == 's') {
-            this.plugin.exportCSV();
+            this.exportCSV();
         }
         // override ctrl presses
         if (event.ctrlKey) {

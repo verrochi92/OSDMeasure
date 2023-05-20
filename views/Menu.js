@@ -47,7 +47,7 @@ class Menu {
 
         // create button bar
         this.buttonBar = new ButtonBar(this.plugin);
-        this.element.appendChild(this.buttonBar);
+        this.element.appendChild(this.buttonBar.element);
 
         // set starting color after data loaded (color maintained upon restarting)
         document.addEventListener("data-loaded", this.updateColor.bind(this));
