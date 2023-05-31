@@ -362,7 +362,19 @@ class OSDMeasure {
             redoStack: this.redoStack,
             color: this.measurementColor
         });
-        localStorage.setItem(currentTileSource, json);
+        try {
+            localStorage.setItem(currentTileSource, json);
+        } catch (e) {
+            if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+                // Handle storage quota exceeded error
+                // Increase the storage value or notify the user about the issue
+                alert("Storage full , new measurements won't be stored")
+                console.error('Storage quota exceeded. Please increase the storage value.');
+            } else {
+                // Handle other localStorage errors
+                console.error('Error saving data to localStorage:', e);
+            }
+        }
     }
 
     /**
