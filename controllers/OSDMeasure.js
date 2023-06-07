@@ -114,6 +114,7 @@ class OSDMeasure {
             );
             measurement.render(zoom);
             this.measurements.push(measurement);
+            measurement.id = this.measurements.length - 1;
             this.saveInLocalStorage();
             // dispatch an event to let it be known there is a new measurement
             document.dispatchEvent(new Event("measurement-added"));
@@ -252,6 +253,7 @@ class OSDMeasure {
                     data.measurements[i].name, data.measurements[i].color, this.conversionFactor, this.units, this.fabricCanvas
                 );
                 this.measurements.push(measurement);
+                measurement.id = measurements.length - 1;
                 document.dispatchEvent(new Event("measurement-added"));
             }
             // now for the redo stack
@@ -323,6 +325,7 @@ class OSDMeasure {
             }
             else { // it's a measurement
                 this.measurements.push(lastObject);
+                lastObject.id = measurements.length - 1;
                 lastObject.p1.render(zoom);
                 lastObject.p2.render(zoom);
                 lastObject.render(zoom);
