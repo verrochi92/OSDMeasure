@@ -9,8 +9,17 @@
 class DexieWrapper {
 
     db; // Dexie.js object to access the database
+    plugin; // reference to the plugin
 
-    constructor() {
+    /**
+     * constructor
+     * 
+     * Opens the database, will work whether it exists already or not
+     * 
+     * @param {OSDMeasure} plugin 
+     */
+    constructor(plugin) {
+        this.plugin = plugin;
         this.db = new Dexie("database");
         this.db.version(1).stores({
             measurements: `
@@ -40,7 +49,16 @@ class DexieWrapper {
      * @returns a list of all stored measurements
      */
     async getAllMeasurements() {
-        return await this.db.measurements.toArray();
+        let measurements = [];
+        let result = await this.db.measurements.toArray();
+        for (let i = 0; i < result.length; i++) {
+            measurements[i] = new Measurement(
+                new Point(result[i].p1x, result[i].p1y, result[i].color, this.plugin.fabricCanvas),
+                new Point(result[i].p2x, result[i].p2y, result[i].color, this.plugin.fabricCanvas),
+                result[i].name, result[i].color, this.plugin.conversionFactor, this.plugin.units, this.plugin.fabricCanvas
+            );
+        }
+        return measurements;
     }
 
     /**
