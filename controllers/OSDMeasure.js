@@ -17,6 +17,7 @@ class OSDMeasure {
     viewer; // the OpenSeadragon viewer
     overlay; // the fabric.js overlay, contains the canvas
     fabricCanvas; // the fabric.js canvas to draw shapes on
+    db; // DexieWrapper to access the database
 
     /**
      * Flags
@@ -58,7 +59,6 @@ class OSDMeasure {
         this.fabricCanvas = this.overlay.fabricCanvas();
         this.viewer.gestureSettingsMouse.clickToZoom = false;
         this.viewer.gestureSettingsTouch.clickToZoom = false;
-
         this.isMeasuring = false; // toggles when user places first point of a measurement
 
         // the two points used to measure - these are image coordinates
@@ -69,6 +69,9 @@ class OSDMeasure {
         this.measurements = [];
         // temporarily stores undone measurements
         this.redoStack = [];
+
+        // initialize databasse
+        this.db = new DexieWrapper(this);
 
         // add our custom handler for measurements
         this.viewer.addHandler('canvas-double-click', (event) => {
