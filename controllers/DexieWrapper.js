@@ -21,7 +21,7 @@ class DexieWrapper {
     constructor(plugin) {
         this.plugin = plugin;
         this.db = new Dexie("database");
-        this.db.version(1).stores({
+        this.db.version(2).stores({
             measurements: `
                 id,
                 image,
