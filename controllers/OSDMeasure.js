@@ -232,46 +232,11 @@ class OSDMeasure {
      * loadFromLocalStorage:
      *     Loads any existing measurements from localStorage
      */
-    loadFromLocalStorage() {
-        // we will use the image name as a key
-        let currentTileSource = this.viewer.tileSources;
-        let data = JSON.parse(localStorage.getItem(currentTileSource));
-        // make sure we have data
-        if (data != null) {
-            // we have to add the measurements one-by-one 
-            for (let i = 0; i < data.measurements.length; i++) {
-                // JSON.stringify() strips our methods from Measurement objects,
-                // so we have to re-construct all of them one-by-one
-                let measurement = new Measurement(
-                    new Point(
-                        parseInt(data.measurements[i].p1.x),
-                        parseInt(data.measurements[i].p1.y),
-                        data.measurements[i].color, this.fabricCanvas
-                    ),
-                    new Point(
-                        parseInt(data.measurements[i].p2.x),
-                        parseInt(data.measurements[i].p2.y),
-                        data.measurements[i].color, this.fabricCanvas
-                    ),
-                    data.measurements[i].name, data.measurements[i].color, this.conversionFactor, this.units, this.fabricCanvas
-                );
-                this.measurements.push(measurement);
-                measurement.id = measurements.length - 1;
-                document.dispatchEvent(new Event("measurement-added"));
-            }
-            // now for the redo stack
-            for (let i = 0; i < data.redoStack.length; i++) {
-                this.redoStack.push(new Measurement(
-                    new Point(parseInt(data.redoStack[i].p1.x), parseInt(data.redoStack[i].p1.y), data.redoStack[i].color, this.fabricCanvas),
-                    new Point(parseInt(data.redoStack[i].p2.x), parseInt(data.redoStack[i].p2.y), data.redoStack[i].color, this.fabricCanvas),
-                    data.redoStack[i].name, data.redoStack[i].color, this.conversionFactor, this.units, this.fabricCanvas
-                ));
-            }
-            this.measurementColor = data.color;
-            document.dispatchEvent(new Event("data-loaded"));
-            // render the measurements
-            this.renderAllMeasurements();
-        }
+    async loadFromLocalStorage() {
+        this.measurements = await this.db.getAllMeasurements();
+        document.dispatchEvent(new Event("data-loaded"));
+        // render the measurements
+        this.renderAllMeasurements();
     }
 
     /**
@@ -361,26 +326,7 @@ class OSDMeasure {
      *     Saves the measurements in localStorage in JSON format
      */
     saveInLocalStorage() {
-        // we can use the tileSource as a key to identify which image we are working with
-        let currentTileSource = this.viewer.tileSources; // for now only works with one source
-        let json = JSON.stringify({
-            measurements: this.measurements,
-            redoStack: this.redoStack,
-            color: this.measurementColor
-        });
-        try {
-            localStorage.setItem(currentTileSource, json);
-        } catch (e) {
-            if (e instanceof DOMException && e.name === 'QuotaExceededError') {
-                // Handle storage quota exceeded error
-                // Increase the storage value or notify the user about the issue
-                alert("Storage full , new measurements won't be stored")
-                console.error('Storage quota exceeded. Please increase the storage value.');
-            } else {
-                // Handle other localStorage errors
-                console.error('Error saving data to localStorage:', e);
-            }
-        }
+        this.db.saveAll(this.measurements);
     }
 
     /**

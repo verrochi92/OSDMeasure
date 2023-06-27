@@ -54,11 +54,11 @@ class DexieWrapper {
         // query all measurements related to the image
         let result = await this.db.measurements.where("image").equals(this.plugin.viewer.tileSources).toArray();
         for (let i = 0; i < result.length; i++) {
-            measurements[i] = new Measurement(
+            measurements.push(new Measurement(
                 new Point(result[i].p1x, result[i].p1y, result[i].color, this.plugin.fabricCanvas),
                 new Point(result[i].p2x, result[i].p2y, result[i].color, this.plugin.fabricCanvas),
                 result[i].name, result[i].color, this.plugin.conversionFactor, this.plugin.units, this.plugin.fabricCanvas
-            );
+            ));
         }
         return measurements;
     }
@@ -72,6 +72,19 @@ class DexieWrapper {
      */
     removeMeasurement(measurement) {
         this.db.measurements.delete(measurement.id);
+    }
+
+    /**
+     * saveAll:
+     * 
+     * Saves an entire list of measurements
+     * 
+     * @param {Measurement []} measurements 
+     */
+    saveAll(measurements) {
+        for (let i = 0; i < measurements.length; i++) {
+            this.saveMeasurement(measurements[i]);
+        }
     }
 
     /**
