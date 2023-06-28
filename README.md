@@ -1,5 +1,8 @@
 # OSDMeasure
  Measure with OpenSeadragon!
+
+ Created by Nicholas Verrochi, Vidhya Sree Narayanappa, Sairam Bandarupalli and Andy Duverneau
+ for Professor Daniel Haehn's [CS410](https://cs410.net/) class at the University of Massachusetts in Boston.
  
  This plugin was created as part of [the Axolotl Project](https://github.com/verrochi92/axolotl/) for the McCusker lab at UMass Boston.
  OSDMeasure is a specialized measuring tool for OpenSeadragon that makes taking measurements from OpenSeadragon-compatible images easy
@@ -14,12 +17,13 @@
  1. [OpenSeadragon](http://openseadragon.github.io/)
  2. [Fabric.js](http://fabricjs.com/)
  3. [Fabric.js overlay plugin for OpenSeadragon](https://github.com/altert/OpenseadragonFabricjsOverlay)
+ 4. [Dexie.js](https://dexie.org)
 
 If you download the packaged version, it will include everything needed, as well as a minified source file.
 Once the dependencies and plugin are setup, simply include them in the HTML:
 
 `
-    <script src="OSDMeasure.min.js"></script>
+    <script src="OSDMeasure.js"></script>
 `
 
 You will need to instantiate an OpenSeadragon viewer with the following options: 

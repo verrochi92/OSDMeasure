@@ -160,8 +160,12 @@ class OSDMeasure {
         }
         this.measurements = [];
         this.redoStack = [];
+        if (this.isMeasuring) {
+            this.p1.remove();
+        }
         this.p1 = null;
         this.p2 = null;
+        this.isMeasuring = false;
         document.dispatchEvent(new Event("measurements-reset"));
     }
 
@@ -234,6 +238,7 @@ class OSDMeasure {
      */
     async loadFromLocalStorage() {
         this.measurements = await this.db.getAllMeasurements();
+        this.setMeasurementColor(localStorage.getItem("color"));
         document.dispatchEvent(new Event("data-loaded"));
         // render the measurements
         this.renderAllMeasurements();
@@ -327,6 +332,7 @@ class OSDMeasure {
      */
     saveInLocalStorage() {
         this.db.saveAll(this.measurements);
+        localStorage.setItem("color", this.measurementColor);
     }
 
     /**
