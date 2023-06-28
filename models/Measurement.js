@@ -7,6 +7,7 @@
 
 class Measurement {
 
+    id; // used to track in the database - set externally
     p1; // starting point of the measurement in **image** coordinates
     p2; // ending point of the measurement in image coordinates
     name; // name given to the measurement

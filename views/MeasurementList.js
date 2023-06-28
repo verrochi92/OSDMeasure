@@ -29,17 +29,32 @@ class MeasurementList {
         this.element.style.setProperty("list-style", "none");
 
         // add new list item when measurement added
-        document.addEventListener("measurement-added", this.addMeasurement.bind(this));
-        document.addEventListener("measurement-removed", this.removeMeasurement.bind(this));
+        document.addEventListener("measurement-added", this.addLatestMeasurement.bind(this));
+        document.addEventListener("measurement-removed", this.removeLatestMeasurement.bind(this));
         document.addEventListener("measurements-reset", this.resetMeasurements.bind(this));
+        document.addEventListener("data-loaded", this.addAllMeasurements.bind(this));
     }
 
     /**
-     * addMeasurement:
+     * addAllMeasurements:
+     * 
+     * Adds all measurements to the list
+     */
+    addAllMeasurements() {
+        for (let i = 0; i < this.plugin.measurements.length; i++) {
+            let measurement = this.plugin.measurements[i];
+            let listItem = new MeasurementListItem(this.plugin, measurement);
+            this.listItems.push(listItem);
+            this.element.appendChild(listItem.element);
+        }
+    }
+
+    /**
+     * addLatestMeasurement:
      * 
      * Creates a new list item for the most recently added measurement and adds it to the list
      */
-    addMeasurement() {
+    addLatestMeasurement() {
         let measurement = this.plugin.measurements[this.plugin.measurements.length - 1];
         let listItem = new MeasurementListItem(this.plugin, measurement);
         this.listItems.push(listItem);
@@ -58,11 +73,11 @@ class MeasurementList {
     }
 
     /**
-     * removeMeasurement:
+     * removeLatestMeasurement:
      * 
      * Removes the latest measurement from the list upon undo
      */
-    removeMeasurement() {
+    removeLatestMeasurement() {
         this.element.removeChild(this.listItems.pop().element);
     }
 
