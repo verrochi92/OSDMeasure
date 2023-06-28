@@ -154,7 +154,7 @@ class OSDMeasure {
      *     localStorage and clears fabric objects and measurement data.
      */
     clear() {
-        localStorage.removeItem(this.viewer.tileSources);
+        this.db.clear();
         for (let i = 0; i < this.measurements.length; i++) {
             this.measurements[i].remove();
         }
@@ -364,6 +364,7 @@ class OSDMeasure {
             let measurement = this.measurements.pop()
             measurement.remove();
             this.redoStack.push(measurement);
+            this.db.removeMeasurement(measurement);
             this.saveInLocalStorage();
             document.dispatchEvent(new Event("measurement-removed"));
         }
