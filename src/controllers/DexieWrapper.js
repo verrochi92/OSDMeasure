@@ -21,7 +21,7 @@ class DexieWrapper {
     constructor(plugin) {
         this.plugin = plugin;
         this.db = new Dexie("database");
-        this.db.version(2).stores({
+        this.db.version(3).stores({
             measurements: `
                 id,
                 image,
@@ -54,11 +54,13 @@ class DexieWrapper {
         // query all measurements related to the image
         let result = await this.db.measurements.where("image").equals(this.plugin.viewer.tileSources[0]).toArray();
         for (let i = 0; i < result.length; i++) {
-            measurements.push(new Measurement(
+            let measurement = new Measurement(
                 new Point(result[i].p1x, result[i].p1y, result[i].color, this.plugin.fabricCanvas),
                 new Point(result[i].p2x, result[i].p2y, result[i].color, this.plugin.fabricCanvas),
                 result[i].name, result[i].color, this.plugin.conversionFactor, this.plugin.units, this.plugin.fabricCanvas
-            ));
+            );
+            measurement.id = this.plugin.measurements.length - 1;
+            measurements.push(measurement);
         }
         return measurements;
     }
