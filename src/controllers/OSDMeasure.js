@@ -298,7 +298,7 @@ class OSDMeasure {
             }
             else { // it's a measurement
                 this.measurements.push(lastObject);
-                lastObject.id = measurements.length - 1;
+                lastObject.id = this.measurements.length - 1;
                 lastObject.p1.render(zoom);
                 lastObject.p2.render(zoom);
                 lastObject.render(zoom);
@@ -357,7 +357,7 @@ class OSDMeasure {
      *     point is erased and the user will have to start over.
      *     Otherwise, the last created measurement is erased.
      */
-    undo() {
+    async undo() {
         if (this.isMeasuring) { // we have a point
             // store the point for redo
             this.redoStack.push(this.p1);
@@ -370,7 +370,7 @@ class OSDMeasure {
             let measurement = this.measurements.pop()
             measurement.remove();
             this.redoStack.push(measurement);
-            this.db.removeMeasurement(measurement);
+            await this.db.removeMeasurement(measurement);
             this.saveInLocalStorage();
             document.dispatchEvent(new Event("measurement-removed"));
         }
