@@ -52,7 +52,7 @@ class DexieWrapper {
     async getAllMeasurements() {
         let measurements = [];
         // query all measurements related to the image
-        let result = await this.db.measurements.where("image").equals(this.plugin.viewer.tileSources).toArray();
+        let result = await this.db.measurements.where("image").equals(this.plugin.viewer.tileSources[0]).toArray();
         for (let i = 0; i < result.length; i++) {
             measurements.push(new Measurement(
                 new Point(result[i].p1x, result[i].p1y, result[i].color, this.plugin.fabricCanvas),
@@ -70,8 +70,8 @@ class DexieWrapper {
      * 
      * @param {Measurement} measurement 
      */
-    removeMeasurement(measurement) {
-        this.db.measurements.delete(measurement.id);
+    async removeMeasurement(measurement) {
+        await this.db.measurements.delete(measurement.id);
     }
 
     /**
@@ -98,7 +98,7 @@ class DexieWrapper {
     saveMeasurement(measurement) {
         this.db.measurements.put({
             id: measurement.id,
-            image: this.plugin.viewer.tileSources,
+            image: this.plugin.viewer.tileSources[0],
             p1x: measurement.p1.x,
             p1y: measurement.p1.y,
             p2x: measurement.p2.x,

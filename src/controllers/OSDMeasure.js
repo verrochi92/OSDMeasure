@@ -298,7 +298,7 @@ class OSDMeasure {
             }
             else { // it's a measurement
                 this.measurements.push(lastObject);
-                lastObject.id = measurements.length - 1;
+                lastObject.id = this.measurements.length - 1;
                 lastObject.p1.render(zoom);
                 lastObject.p2.render(zoom);
                 lastObject.render(zoom);
