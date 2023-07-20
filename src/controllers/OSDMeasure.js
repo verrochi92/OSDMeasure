@@ -174,15 +174,17 @@ class OSDMeasure {
      *     creates a CSV containing the measurement data
      */
     exportCSV() {
-        let header = ["Name", "Point 1", "Point 2", "Distance"]
+        let header = ["Name", "Point 1 X", "Point 1 Y", "Point 2 X", "Point 2 Y", "Distance"];
         let createRow = (measurement) => {
             return [
                 measurement.name,
-                measurement.p1.toString(),
-                measurement.p2.toString(),
-                measurement.toString()
+                measurement.p1.x,
+                measurement.p1.y,
+                measurement.p2.x,
+                measurement.p2.y,
+                measurement.distance
             ];
-        }
+        };
         // generate the rows
         let rows = [header];
         for (let i = 0; i < this.measurements.length; i++) {
