@@ -3,7 +3,7 @@
  * 
  * Encapsulates a single item on the measurement list
  * 
- * By Nicholas Verrochi
+ * By Nicholas Verrochi and Vidhya Sree N
  */
 
 class MeasurementListItem {

@@ -3,7 +3,7 @@
  * 
  * Encapsulates the dynamic measurement list in the menu
  * 
- * By Nicholas Verrochi
+ * By Nicholas Verrochi and Vidhya Sree N
  */
 
 class MeasurementList {

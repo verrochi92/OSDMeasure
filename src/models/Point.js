@@ -1,7 +1,7 @@
 /**
  * Point.js
  * Object model to represent a point (part of a measurement)
- * By Nicholas Verrochi
+ * By Nicholas Verrochi and Vidhya Sree N
  * For CS410 - The Axolotl Project
  */
 

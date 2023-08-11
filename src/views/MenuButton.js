@@ -3,7 +3,7 @@
  * 
  * Encapsulates the menu icon 
  * 
- * By Nicholas Verrochi
+ * By Nicholas Verrochi and Vidhya Sree N
  */
 
 class MenuButton {

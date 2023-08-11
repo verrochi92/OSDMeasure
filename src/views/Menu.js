@@ -3,7 +3,7 @@
  * 
  * Class to represent the measurement menu
  * 
- * By Nicholas Verrochi
+ * By Nicholas Verrochi and Vidhya Sree N
  */
 
 class Menu {

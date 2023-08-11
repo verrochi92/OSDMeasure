@@ -5,7 +5,7 @@
  * This gets generated on the document and alters
  * some of the css for the document
  * 
- * By Nicholas Verrochi
+ * By Nicholas Verrochi and Vidhya Sree N
  */
 
 class UI {

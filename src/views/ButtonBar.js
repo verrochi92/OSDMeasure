@@ -3,7 +3,7 @@
  * 
  * Creates a row of buttons for the menu
  * 
- * By Nicholas Verrochi
+ * By Nicholas Verrochi and Vidhya Sree N
  */
 
 class ButtonBar {
