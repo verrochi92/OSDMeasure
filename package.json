@@ -1,0 +1,9 @@
+{
+  "name": "lib",
+  "version": "1.0.0",
+  "source": "src/OSDMeasure.js",
+  "main": "dist/OSDMeasurePlugin.min.js",
+  "devDependencies": {
+    "parcel": "^2.9.3"
+  }
+}
