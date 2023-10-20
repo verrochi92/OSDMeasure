@@ -155,6 +155,7 @@ class OSDMeasure {
     units; // string to indicate what units are used, for example "um"
     imageIdentifier;
     measurementIdCounter;
+    measurementList = null;
     /**
      * constructor
      *
@@ -187,6 +188,8 @@ class OSDMeasure {
         // initialize databasse
         this.db = new DexieWrapper(this);
 
+        this.measurementList = new MeasurementList(this);
+
         this.imageIdentifier = this.viewer.tileSources[this.viewer.currentPage()];
 
         this.viewer.addHandler('page', (event) => {
@@ -218,6 +221,26 @@ class OSDMeasure {
 
         this.loadFromLocalStorage();
          this.measurementIdCounter = 0;
+         // Add a click event listener to select a measurement when clicked
+             this.viewer.addHandler("canvas-click", (event) => {
+                 const webPoint = event.position;
+                 const viewportPoint = this.viewer.viewport.pointFromPixel(webPoint);
+                 const imagePoint = this.viewer.viewport.viewportToImageCoordinates(viewportPoint);
+
+                for (let i = 0; i < this.measurements.length; i++) {
+                            if (this.measurements[i].isPointInside(imagePoint.x, imagePoint.y)) {
+                                // Check if the clicked measurement is the same as the selectedMeasurement
+                                if (this.selectedMeasurement === this.measurements[i]) {
+                                    // If it is, deselect it
+                                    this.deselectMeasurement();
+                                } else {
+                                    // If it's not, select it
+                                    this.selectMeasurement(this.measurements[i]);
+                                }
+                                break;
+                    }
+                 }
+             });
     }
 
     updateImageIdentifier(event){
@@ -273,6 +296,50 @@ class OSDMeasure {
         this.redoStack = [];
         this.isMeasuring = !this.isMeasuring;
     }
+    deleteSelectedMeasurement() {
+            if (this.selectedMeasurement) {
+                const measurementIndex = this.measurements.indexOf(this.selectedMeasurement);
+                console.log(measurementIndex);
+                if (measurementIndex !== -1) {
+                    // Remove it from the canvas
+                    this.selectedMeasurement.remove();
+
+                    // Remove it from the list
+                    this.measurements.splice(measurementIndex, 1);
+
+                    // Remove it from the database
+                    this.redoStack.push(this.selectedMeasurement);
+                    this.db.removeMeasurement(this.selectedMeasurement, this.imageIdentifier);
+                    this.saveInLocalStorage(this.imageIdentifier);
+                    // Dispatch a custom event with a parameter
+                    const event = new CustomEvent("delete-selected-measurement", {
+                        detail: {
+                          measurement: this.selectedMeasurement
+                         }
+                    });
+                    document.dispatchEvent(event);
+
+                    this.deselectMeasurement(); // Deselect the deleted measurement
+                }
+            }
+        }
+         // Add a method to handle measurement selection
+          selectMeasurement(measurement) {
+              // Deselect the previously selected measurement (if any)
+              if (this.selectedMeasurement) {
+                  this.deselectMeasurement();
+              }
+
+              this.selectedMeasurement = measurement;
+              this.selectedMeasurement.select();
+          }
+          // Add a method to deselect the currently selected measurement
+          deselectMeasurement() {
+              if (this.selectedMeasurement) {
+                  this.selectedMeasurement.deselect();
+                  this.selectedMeasurement = null;
+              }
+          }
 
     /**
      * adjustToZoom:
@@ -318,7 +385,7 @@ class OSDMeasure {
      *     creates a CSV containing the measurement data
      */
     exportCSV() {
-        let header = ["Name", "Point 1 X", "Point 1 Y", "Point 2 X", "Point 2 Y", "Distance"];
+        let header = ["Name", "Point 1 X", "Point 1 Y", "Point 2 X", "Point 2 Y", "Distance(mm)"];
         let createRow = (measurement) => {
             return [
                 measurement.name,
@@ -372,6 +439,7 @@ class OSDMeasure {
         else if (event.ctrlKey && event.key == 's') {
             this.exportCSV();
         }
+        else if(event.ctrlKey && event.key == "d") this.deleteSelectedMeasurement();
         // override ctrl presses
         if (event.ctrlKey) {
             event.preventDefault();
@@ -548,6 +616,7 @@ class Measurement {
     fabricCanvas; // the canvas on which to render the fabric.js objects
     line; // line between the two points
     textObject; // text displaying the distance
+    isSelected;
 
     /**
      * constructor
@@ -574,7 +643,8 @@ class Measurement {
         // convert to proper units
         this.distance *= conversionFactor;
         this.fabricCanvas = fabricCanvas;
-        this.imageIdentifier = imageIdentifier
+        this.imageIdentifier = imageIdentifier;
+        this.isSelected = false;
     }
 
     /**
@@ -632,6 +702,38 @@ class Measurement {
         });
         this.fabricCanvas.add(this.textObject);
     }
+        // Add methods to select and deselect the measurement
+        select() {
+            this.line.set({
+                stroke: "grey"
+            });
+            // Highlight both points with a grey fill
+            this.p1.fabricObject.set({ fill: "grey" });
+            this.p2.fabricObject.set({ fill: "grey" });
+
+            this.textObject.set({ fill: "grey" });
+            this.fabricCanvas.renderAll();
+        }
+
+        deselect() {
+            this.line.set({
+                stroke: this.color
+            });
+            this.p1.fabricObject.set({ fill: this.color });
+            this.p2.fabricObject.set({ fill: this.color });
+
+            this.textObject.set({ fill: this.color });
+            this.fabricCanvas.renderAll();
+        }
+     // Add a method to check if a point is inside the measurement
+         isPointInside(x, y) {
+             const minX = Math.min(this.p1.x, this.p2.x);
+             const maxX = Math.max(this.p1.x, this.p2.x);
+             const minY = Math.min(this.p1.y, this.p2.y);
+             const maxY = Math.max(this.p1.y, this.p2.y);
+
+             return x >= minX && x <= maxX && y >= minY && y <= maxY;
+         }
 }
 
 /**
@@ -735,6 +837,7 @@ class ButtonBar {
     redoButton; // redo button
     resetButton; // reset button
     exportButton; // allows for exporting measurement data to csv
+    deleteButton;
 
     /**
      * constructor
@@ -785,6 +888,15 @@ class ButtonBar {
             this.plugin.exportCSV();
         });
         this.element.appendChild(this.exportButton);
+        // Create a "Delete" button
+                this.deleteButton = document.createElement("input");
+                this.deleteButton.setAttribute("type", "button");
+                this.deleteButton.setAttribute("value", "delete (ctrl + d)");
+                this.setButtonStyle(this.deleteButton);
+                this.deleteButton.addEventListener("click", () => {
+                    this.plugin.deleteSelectedMeasurement();
+                });
+                this.element.appendChild(this.deleteButton);
     }
 
     /**
@@ -838,6 +950,9 @@ class MeasurementList {
         document.addEventListener("measurement-removed", this.removeLatestMeasurement.bind(this));
         document.addEventListener("measurements-reset", this.resetMeasurements.bind(this));
         document.addEventListener("data-loaded", this.addAllMeasurements.bind(this));
+        document.addEventListener("delete-selected-measurement", (event) => {
+                            this.removeSelectedMeasurement(event.detail.measurement);
+                        });
     }
 
     /**
@@ -897,6 +1012,16 @@ class MeasurementList {
         }
         this.listItems = [];
     }
+
+    removeSelectedMeasurement(measurement) {
+            const measurementId = measurement.id;
+            const indexToRemove = this.listItems.findIndex(item => item.measurement.id === measurementId);
+            console.log(indexToRemove);
+            if (indexToRemove !== -1) {
+                this.element.removeChild(this.listItems[indexToRemove].element);
+                this.listItems.splice(indexToRemove, 1);
+            }
+        }
 }
 
 /**
