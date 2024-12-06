@@ -7,6 +7,9 @@
  This plugin was created as part of [the Axolotl Project](https://github.com/verrochi92/axolotl/) for the McCusker lab at UMass Boston.
  OSDMeasure is a specialized measuring tool for OpenSeadragon that makes taking measurements from OpenSeadragon-compatible images easy
  and fast. 
+
+![OSDMeasure Plugin Screenshot](OSDMeasure.png)
+*Example of the OSDMeasure plugin in action.*
  
  [Click here to try it out!](https://verrochi92.github.io/axolotl/viewer.html?tileSource=W255B_0)
  
